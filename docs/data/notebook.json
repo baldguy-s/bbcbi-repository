@@ -1,12 +1,6 @@
 {
   "_nextId": 11,
-  "years": [
-    {
-      "id": 10,
-      "label": "DEBUGTEST-Year",
-      "sort_order": 1
-    }
-  ],
+  "years": [],
   "semesters": [],
   "classes": [],
   "class_docs": [],
