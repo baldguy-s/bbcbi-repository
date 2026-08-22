@@ -1,0 +1,16 @@
+{
+  "_nextId": 2,
+  "years": [
+    {
+      "id": 1,
+      "label": "TEST-2025-2026",
+      "sort_order": 0
+    }
+  ],
+  "semesters": [],
+  "classes": [],
+  "class_docs": [],
+  "sessions": [],
+  "entries": [],
+  "files": []
+}
