@@ -1,5 +1,5 @@
 {
-  "_nextId": 43,
+  "_nextId": 44,
   "years": [
     {
       "id": 39,
@@ -26,7 +26,17 @@
       "archived": false
     }
   ],
-  "classes": [],
+  "classes": [
+    {
+      "id": 43,
+      "semester_id": 42,
+      "name": "FEATTEST-Class",
+      "professor": "Dr. Jones",
+      "professor_email": "jones@example.com",
+      "office_hours": "Tue 2-4pm",
+      "sort_order": 0
+    }
+  ],
   "class_docs": [],
   "sessions": [],
   "entries": [],
