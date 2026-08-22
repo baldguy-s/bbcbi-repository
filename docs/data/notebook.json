@@ -1,5 +1,5 @@
 {
-  "_nextId": 102,
+  "_nextId": 103,
   "years": [
     {
       "id": 39,
@@ -47,7 +47,20 @@
       "sort_order": 0
     }
   ],
-  "entries": [],
+  "entries": [
+    {
+      "id": 102,
+      "session_id": 101,
+      "type": "assignment",
+      "title": "UITEST Assignment",
+      "body_markdown": "",
+      "due_date": null,
+      "grade": null,
+      "points_possible": null,
+      "created_at": "2026-08-22 15:26:29",
+      "updated_at": "2026-08-22 15:26:29"
+    }
+  ],
   "files": [],
   "schedule_slots": [
     {
