@@ -1,5 +1,5 @@
 {
-  "_nextId": 93,
+  "_nextId": 94,
   "years": [
     {
       "id": 39,
@@ -26,7 +26,17 @@
       "archived": false
     }
   ],
-  "classes": [],
+  "classes": [
+    {
+      "id": 93,
+      "semester_id": 92,
+      "name": "UITEST-Class",
+      "professor": null,
+      "professor_email": null,
+      "office_hours": null,
+      "sort_order": 0
+    }
+  ],
   "class_docs": [],
   "sessions": [],
   "entries": [],
