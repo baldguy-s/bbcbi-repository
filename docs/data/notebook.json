@@ -10,11 +10,6 @@
       "id": 40,
       "label": "2025 - 2026",
       "sort_order": 0
-    },
-    {
-      "id": 117,
-      "label": "UITEST2-Year",
-      "sort_order": 2
     }
   ],
   "semesters": [
@@ -37,13 +32,6 @@
       "year_id": 39,
       "label": "Spring",
       "sort_order": 1,
-      "archived": false
-    },
-    {
-      "id": 118,
-      "year_id": 117,
-      "label": "UITEST2-Sem",
-      "sort_order": 0,
       "archived": false
     }
   ],
@@ -83,20 +71,6 @@
       "instructor_name": "Dr Tom Lamkin",
       "instructor_email": null,
       "instructor_custom_fields": []
-    },
-    {
-      "id": 119,
-      "semester_id": 118,
-      "name": "UITEST2-Class",
-      "instructor_name": "Dr. Test",
-      "instructor_email": "test@example.com",
-      "instructor_custom_fields": [
-        {
-          "label": "Twitter",
-          "value": "@drtest"
-        }
-      ],
-      "sort_order": 0
     }
   ],
   "class_docs": [
@@ -139,13 +113,6 @@
       "day_of_week": 2,
       "start_time": "20:00",
       "end_time": "21:20"
-    },
-    {
-      "id": 120,
-      "class_id": 119,
-      "day_of_week": 6,
-      "start_time": "10:00",
-      "end_time": "10:50"
     }
   ]
 }
