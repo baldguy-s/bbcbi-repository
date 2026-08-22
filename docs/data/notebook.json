@@ -10,44 +10,13 @@
       "id": 40,
       "label": "2025 - 2026",
       "sort_order": 0
-    },
-    {
-      "id": 81,
-      "label": "UITEST-Year",
-      "sort_order": 2
     }
   ],
-  "semesters": [
-    {
-      "id": 82,
-      "year_id": 81,
-      "label": "UITEST-Sem",
-      "sort_order": 0,
-      "archived": false
-    }
-  ],
-  "classes": [
-    {
-      "id": 83,
-      "semester_id": 82,
-      "name": "UITEST-Class",
-      "professor": "Dr. Test",
-      "professor_email": "test@example.com",
-      "office_hours": "Mon 1-2pm",
-      "sort_order": 0
-    }
-  ],
+  "semesters": [],
+  "classes": [],
   "class_docs": [],
   "sessions": [],
   "entries": [],
   "files": [],
-  "schedule_slots": [
-    {
-      "id": 84,
-      "class_id": 83,
-      "day_of_week": 2,
-      "start_time": "10:00",
-      "end_time": "10:50"
-    }
-  ]
+  "schedule_slots": []
 }
