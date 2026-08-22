@@ -54,7 +54,9 @@
       "sort_order": 1,
       "instructor_name": "Bro. Greg Stephens",
       "instructor_email": "stigman1@outlook.com",
-      "instructor_custom_fields": []
+      "instructor_custom_fields": [],
+      "start_date": "2026-09-14",
+      "end_date": null
     },
     {
       "id": 110,
