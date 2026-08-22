@@ -1,5 +1,5 @@
 {
-  "_nextId": 108,
+  "_nextId": 109,
   "years": [
     {
       "id": 39,
@@ -44,6 +44,15 @@
       "professor_email": "wbarrypreach@gmail.com",
       "office_hours": null,
       "sort_order": 0
+    },
+    {
+      "id": 108,
+      "semester_id": 104,
+      "name": "Major Prophets",
+      "professor": null,
+      "professor_email": null,
+      "office_hours": null,
+      "sort_order": 1
     }
   ],
   "class_docs": [],
