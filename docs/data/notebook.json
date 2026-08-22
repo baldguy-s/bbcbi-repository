@@ -48,13 +48,6 @@
       "day_of_week": 1,
       "start_time": "09:00",
       "end_time": "09:50"
-    },
-    {
-      "id": 45,
-      "class_id": 43,
-      "day_of_week": 3,
-      "start_time": "09:00",
-      "end_time": "09:50"
     }
   ]
 }
