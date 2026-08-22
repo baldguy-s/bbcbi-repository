@@ -2,72 +2,15 @@
   "_nextId": 37,
   "years": [
     {
-      "id": 29,
-      "label": "TEST-2025-2026",
-      "sort_order": 1
-    },
-    {
       "id": 30,
       "label": "TEST-2026-2027",
       "sort_order": 0
     }
   ],
-  "semesters": [
-    {
-      "id": 31,
-      "year_id": 29,
-      "label": "Fall",
-      "sort_order": 0
-    }
-  ],
-  "classes": [
-    {
-      "id": 32,
-      "semester_id": 31,
-      "name": "Romans",
-      "professor": "Dr. Smith",
-      "sort_order": 0
-    }
-  ],
-  "class_docs": [
-    {
-      "id": 33,
-      "class_id": 32,
-      "doc_type": "syllabus",
-      "body_markdown": "# Syllabus\nRead Romans.",
-      "updated_at": "2026-08-22 14:08:38"
-    }
-  ],
-  "sessions": [
-    {
-      "id": 34,
-      "class_id": 32,
-      "session_date": "2025-09-01",
-      "topic": "Intro to Romans",
-      "sort_order": 0
-    }
-  ],
-  "entries": [
-    {
-      "id": 35,
-      "session_id": 34,
-      "type": "note",
-      "title": "Grace notes",
-      "body_markdown": "See Rom. 8:28-30 and John 3:16 for the heart of it.",
-      "due_date": null,
-      "created_at": "2026-08-22 14:08:41",
-      "updated_at": "2026-08-22 14:08:41"
-    },
-    {
-      "id": 36,
-      "session_id": 34,
-      "type": "assignment",
-      "title": "Essay",
-      "body_markdown": "Write about Rom 5:1",
-      "due_date": "2020-01-01",
-      "created_at": "2026-08-22 14:08:42",
-      "updated_at": "2026-08-22 14:08:42"
-    }
-  ],
+  "semesters": [],
+  "classes": [],
+  "class_docs": [],
+  "sessions": [],
+  "entries": [],
   "files": []
 }
