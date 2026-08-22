@@ -1,5 +1,5 @@
 {
-  "_nextId": 150,
+  "_nextId": 151,
   "years": [
     {
       "id": 39,
@@ -82,6 +82,13 @@
     {
       "id": 114,
       "class_id": 106,
+      "doc_type": "syllabus",
+      "body_markdown": "",
+      "updated_at": null
+    },
+    {
+      "id": 150,
+      "class_id": 110,
       "doc_type": "syllabus",
       "body_markdown": "",
       "updated_at": null
