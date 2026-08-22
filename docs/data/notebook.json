@@ -1,5 +1,5 @@
 {
-  "_nextId": 24,
+  "_nextId": 25,
   "years": [
     {
       "id": 12,
@@ -25,7 +25,15 @@
       "sort_order": 0
     }
   ],
-  "classes": [],
+  "classes": [
+    {
+      "id": 24,
+      "semester_id": 23,
+      "name": "Romans",
+      "professor": "Dr. Smith",
+      "sort_order": 0
+    }
+  ],
   "class_docs": [],
   "sessions": [],
   "entries": [],
