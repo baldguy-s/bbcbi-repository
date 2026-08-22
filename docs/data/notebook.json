@@ -1,5 +1,5 @@
 {
-  "_nextId": 15,
+  "_nextId": 16,
   "years": [
     {
       "id": 12,
@@ -17,7 +17,14 @@
       "sort_order": 1
     }
   ],
-  "semesters": [],
+  "semesters": [
+    {
+      "id": 15,
+      "year_id": 13,
+      "label": "Fall",
+      "sort_order": 0
+    }
+  ],
   "classes": [],
   "class_docs": [],
   "sessions": [],
