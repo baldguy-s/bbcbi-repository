@@ -1,12 +1,6 @@
 {
   "_nextId": 37,
-  "years": [
-    {
-      "id": 30,
-      "label": "TEST-2026-2027",
-      "sort_order": 0
-    }
-  ],
+  "years": [],
   "semesters": [],
   "classes": [],
   "class_docs": [],
