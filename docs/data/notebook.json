@@ -1,5 +1,5 @@
 {
-  "_nextId": 113,
+  "_nextId": 114,
   "years": [
     {
       "id": 39,
@@ -98,6 +98,13 @@
       "day_of_week": 2,
       "start_time": "18:30",
       "end_time": "19:50"
+    },
+    {
+      "id": 113,
+      "class_id": 112,
+      "day_of_week": 2,
+      "start_time": "20:00",
+      "end_time": "21:20"
     }
   ]
 }
