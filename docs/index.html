@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Bible Institute Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="login-screen" style="display:none">
+  <div class="login-wrap">
+    <h1 style="text-align:center;margin-bottom:16px;">Bible Institute Notes</h1>
+    <p class="row-sub" style="margin-bottom:12px;">This notebook lives in a GitHub repo, not a server. Paste a GitHub personal access token (classic, <code>repo</code> scope) to read and edit it — it's stored only in this browser and sent only to api.github.com.</p>
+    <div id="login-error" class="error-text"></div>
+    <input type="password" id="login-password" placeholder="GitHub personal access token" autocomplete="off">
+    <button class="btn-primary" id="login-btn">Connect</button>
+  </div>
+</div>
+
+<div id="app-screen" style="display:none">
+  <header class="banner">
+    <h1>Bible Institute Notes</h1>
+  </header>
+
+  <div class="sticky-bar">
+    <div class="sticky-bar-inner">
+      <div class="control-row">
+        <button class="chip-btn" id="nav-notebook">Notebook</button>
+        <button class="chip-btn" id="nav-inbox">Inbox<span id="inbox-badge"></span></button>
+        <button class="chip-btn" id="nav-upcoming">Upcoming</button>
+        <button class="chip-btn" id="nav-scripture">Scripture Index</button>
+        <button class="chip-btn" id="logout-btn" style="margin-left:auto;">Disconnect</button>
+      </div>
+      <div class="control-row">
+        <input type="search" class="search-input" id="search-input" placeholder="Search notes, assignments, files...">
+      </div>
+      <div class="control-row">
+        <span class="control-label">Text size</span>
+        <button class="chip-btn" id="sizeNormalBtn">Normal</button>
+        <button class="chip-btn" id="sizeLargeBtn">Large</button>
+        <button class="chip-btn" id="sizeLargestBtn">Largest</button>
+        <button class="chip-btn" id="darkModeBtn" style="margin-left:auto;">&#9789; Dark Mode</button>
+      </div>
+    </div>
+  </div>
+
+  <main id="main-content"></main>
+  <div class="last-updated" id="last-updated"></div>
+</div>
+
+<script src="js/vendor/marked.min.js"></script>
+<script src="js/vendor/purify.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
