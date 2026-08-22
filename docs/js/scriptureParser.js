@@ -102,6 +102,42 @@ export function bookSortIndex(book) {
   return BOOK_ORDER.has(book) ? BOOK_ORDER.get(book) : BOOKS.length;
 }
 
+// Structured extraction (mirrors lib/scriptureParser.js in the server
+// version) — used here by api.js to compute the Scripture Index on the fly,
+// since there's no server to persist a scripture_refs table client-side.
+export function extractRefs(bodyMarkdown) {
+  if (!bodyMarkdown) return [];
+
+  const refs = [];
+  const regex = buildRegex();
+  let match;
+
+  while ((match = regex.exec(bodyMarkdown)) !== null) {
+    const [raw, aliasMatched, chapterStr, verseStartStr, rangeEndStr, verseEndAfterColonStr] = match;
+    const canonical = ALIAS_TO_CANONICAL.get(aliasMatched.toLowerCase());
+    if (!canonical) continue;
+
+    const chapter = parseInt(chapterStr, 10);
+    const verseStart = verseStartStr ? parseInt(verseStartStr, 10) : null;
+
+    let chapterEnd = null;
+    let verseEnd = null;
+
+    if (verseStartStr && rangeEndStr) {
+      if (verseEndAfterColonStr) {
+        chapterEnd = parseInt(rangeEndStr, 10);
+        verseEnd = parseInt(verseEndAfterColonStr, 10);
+      } else {
+        verseEnd = parseInt(rangeEndStr, 10);
+      }
+    }
+
+    refs.push({ book: canonical, chapter, chapterEnd, verseStart, verseEnd, raw: raw.trim() });
+  }
+
+  return refs;
+}
+
 // Wraps each detected reference in the raw markdown with a markdown link
 // pointing into the Scripture Index route, before the body is handed to
 // marked.parse(). Cheap and good-enough: doesn't try to avoid relinking text

@@ -10,7 +10,6 @@ import { extractRefs, bookSortIndex } from './scriptureParser.js';
 const DB_PATH = 'data/notebook.json';
 
 let DB = null;
-let DB_SHA = null;
 let loadingPromise = null;
 
 function emptyDb() {
@@ -29,15 +28,14 @@ function emptyDb() {
 export async function initStore() {
   if (loadingPromise) return loadingPromise;
   loadingPromise = (async () => {
-    const { json, sha } = await gh.readJsonFile(DB_PATH);
+    const { json } = await gh.readJsonFile(DB_PATH);
     DB = json || emptyDb();
-    DB_SHA = sha;
   })();
   return loadingPromise;
 }
 
 async function save(message) {
-  DB_SHA = await gh.writeJsonFile(DB_PATH, DB, DB_SHA, message);
+  await gh.writeJsonFile(DB_PATH, DB, message);
 }
 
 function nextId() {
