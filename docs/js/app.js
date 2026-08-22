@@ -175,6 +175,7 @@ function showLogin(message) {
 async function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display = 'block';
+  mainEl.innerHTML = `<div class="empty-state">Loading notebook from GitHub…</div>`;
   try {
     await initStore();
   } catch (err) {
