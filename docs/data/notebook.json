@@ -40,8 +40,8 @@
       "id": 106,
       "semester_id": 104,
       "name": "Hermaneutics",
-      "professor": null,
-      "professor_email": null,
+      "professor": "Bro. Barry Wilson",
+      "professor_email": "wbarrypreach@gmail.com",
       "office_hours": null,
       "sort_order": 0
     }
