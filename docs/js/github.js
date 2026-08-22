@@ -41,6 +41,7 @@ async function ghFetch(path, opts = {}) {
   const token = getPAT();
   const res = await fetch(`${API_ROOT}${path}`, {
     ...opts,
+    cache: 'no-store', // the ref/tree/blob lookups reuse the same URLs on every read — never let the browser's own HTTP cache serve a stale one
     headers: {
       Accept: 'application/vnd.github+json',
       Authorization: `Bearer ${token}`,
