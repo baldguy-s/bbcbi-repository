@@ -1,5 +1,5 @@
 {
-  "_nextId": 47,
+  "_nextId": 48,
   "years": [
     {
       "id": 39,
@@ -47,7 +47,20 @@
       "sort_order": 0
     }
   ],
-  "entries": [],
+  "entries": [
+    {
+      "id": 47,
+      "session_id": 46,
+      "type": "assignment",
+      "title": "Essay 1",
+      "body_markdown": "x",
+      "due_date": "2026-08-25",
+      "grade": 45,
+      "points_possible": 50,
+      "created_at": "2026-08-22 15:04:35",
+      "updated_at": "2026-08-22 15:04:35"
+    }
+  ],
   "files": [],
   "schedule_slots": [
     {
