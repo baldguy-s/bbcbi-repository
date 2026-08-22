@@ -1,5 +1,5 @@
 {
-  "_nextId": 112,
+  "_nextId": 113,
   "years": [
     {
       "id": 39,
@@ -62,6 +62,15 @@
       "professor_email": null,
       "office_hours": null,
       "sort_order": 2
+    },
+    {
+      "id": 112,
+      "semester_id": 104,
+      "name": "Biblical Creationism",
+      "professor": null,
+      "professor_email": null,
+      "office_hours": null,
+      "sort_order": 3
     }
   ],
   "class_docs": [],
