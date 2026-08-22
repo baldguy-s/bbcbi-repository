@@ -54,11 +54,11 @@
       "type": "assignment",
       "title": "UITEST Assignment",
       "body_markdown": "",
-      "due_date": null,
-      "grade": null,
-      "points_possible": null,
+      "due_date": "2099-01-01",
+      "grade": 9,
+      "points_possible": 10,
       "created_at": "2026-08-22 15:23:21",
-      "updated_at": "2026-08-22 15:23:21"
+      "updated_at": "2026-08-22 15:23:22"
     }
   ],
   "files": [],
