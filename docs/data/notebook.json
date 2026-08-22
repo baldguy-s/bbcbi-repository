@@ -10,11 +10,6 @@
       "id": 40,
       "label": "2025 - 2026",
       "sort_order": 0
-    },
-    {
-      "id": 151,
-      "label": "UITEST4-Year",
-      "sort_order": 2
     }
   ],
   "semesters": [
@@ -37,13 +32,6 @@
       "year_id": 39,
       "label": "Spring ‘27",
       "sort_order": 1,
-      "archived": false
-    },
-    {
-      "id": 152,
-      "year_id": 151,
-      "label": "UITEST4-Sem",
-      "sort_order": 0,
       "archived": false
     }
   ],
@@ -88,28 +76,6 @@
       "instructor_name": "Dr Tom Lamkin",
       "instructor_email": null,
       "instructor_custom_fields": []
-    },
-    {
-      "id": 153,
-      "semester_id": 152,
-      "name": "UITEST4-Class",
-      "instructor_name": "Prof Test",
-      "instructor_email": "test4@example.com",
-      "instructor_custom_fields": [
-        {
-          "label": "Cell",
-          "value": "(207) 555-1234"
-        },
-        {
-          "label": "Website",
-          "value": "example.org"
-        },
-        {
-          "label": "Degree",
-          "value": "M.Div"
-        }
-      ],
-      "sort_order": 0
     }
   ],
   "class_docs": [
