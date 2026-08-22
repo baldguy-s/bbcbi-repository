@@ -70,7 +70,9 @@
           "label": "Phone",
           "value": "1 (513) 477-9165"
         }
-      ]
+      ],
+      "start_date": "2026-09-15",
+      "end_date": null
     },
     {
       "id": 112,
