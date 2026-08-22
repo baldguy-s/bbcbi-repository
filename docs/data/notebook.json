@@ -80,13 +80,6 @@
       "doc_type": "syllabus",
       "body_markdown": "",
       "updated_at": null
-    },
-    {
-      "id": 115,
-      "class_id": 106,
-      "doc_type": "schedule",
-      "body_markdown": "",
-      "updated_at": null
     }
   ],
   "sessions": [],
