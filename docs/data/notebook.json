@@ -1,5 +1,5 @@
 {
-  "_nextId": 106,
+  "_nextId": 107,
   "years": [
     {
       "id": 39,
@@ -35,7 +35,17 @@
       "archived": false
     }
   ],
-  "classes": [],
+  "classes": [
+    {
+      "id": 106,
+      "semester_id": 104,
+      "name": "Hermaneutics",
+      "professor": null,
+      "professor_email": null,
+      "office_hours": null,
+      "sort_order": 0
+    }
+  ],
   "class_docs": [],
   "sessions": [],
   "entries": [],
