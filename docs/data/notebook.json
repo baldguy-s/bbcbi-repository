@@ -1,12 +1,6 @@
 {
   "_nextId": 29,
-  "years": [
-    {
-      "id": 12,
-      "label": "BROWSERTEST-Year",
-      "sort_order": 0
-    }
-  ],
+  "years": [],
   "semesters": [],
   "classes": [],
   "class_docs": [],
