@@ -1,5 +1,5 @@
 {
-  "_nextId": 41,
+  "_nextId": 42,
   "years": [
     {
       "id": 39,
@@ -10,6 +10,11 @@
       "id": 40,
       "label": "2025 - 2026",
       "sort_order": 0
+    },
+    {
+      "id": 41,
+      "label": "FEATTEST-Year",
+      "sort_order": 2
     }
   ],
   "semesters": [],
@@ -17,5 +22,6 @@
   "class_docs": [],
   "sessions": [],
   "entries": [],
-  "files": []
+  "files": [],
+  "schedule_slots": []
 }
