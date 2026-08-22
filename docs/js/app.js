@@ -5,6 +5,8 @@ import { renderInboxView } from './inbox.js';
 import { renderUpcomingView } from './upcoming.js';
 import { renderScriptureView } from './scripture.js';
 import { renderSearchResults } from './search.js';
+import { renderAdminView } from './admin.js';
+import { renderThisWeekView } from './thisweek.js';
 
 const DARK_MODE_KEY = 'notes_dark_mode';
 const TEXT_SIZE_KEY = 'notes_text_size';
@@ -83,6 +85,10 @@ async function route() {
       await renderInboxView(mainEl, segments);
     } else if (segments[0] === 'upcoming') {
       await renderUpcomingView(mainEl);
+    } else if (segments[0] === 'thisweek') {
+      await renderThisWeekView(mainEl);
+    } else if (segments[0] === 'admin') {
+      await renderAdminView(mainEl, segments);
     } else if (segments[0] === 'scripture') {
       await renderScriptureView(mainEl, segments);
     } else {
@@ -120,6 +126,8 @@ document.getElementById('search-input').addEventListener('input', (e) => {
 });
 
 document.getElementById('nav-notebook').addEventListener('click', () => navigate('#/notebook'));
+document.getElementById('nav-thisweek').addEventListener('click', () => navigate('#/thisweek'));
+document.getElementById('nav-admin').addEventListener('click', () => navigate('#/admin'));
 document.getElementById('nav-inbox').addEventListener('click', () => navigate('#/inbox'));
 document.getElementById('nav-upcoming').addEventListener('click', () => navigate('#/upcoming'));
 document.getElementById('nav-scripture').addEventListener('click', () => navigate('#/scripture'));

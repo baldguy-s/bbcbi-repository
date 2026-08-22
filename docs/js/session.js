@@ -1,5 +1,5 @@
 import { api } from './api.js';
-import { escapeHtml, renderMarkdown, formatDate } from './util.js';
+import { escapeHtml, renderMarkdown, formatDate, todayIso } from './util.js';
 import { attachUploadWidget, renderFileChips, attachFileDeleteHandler } from './upload.js';
 import { currentRenderToken } from './app.js';
 
@@ -224,13 +224,15 @@ function renderEntries(container, entries, sessionId, onChanged) {
 }
 
 function entryCardHtml(entry) {
-  const isOverdue = entry.type === 'assignment' && entry.due_date && entry.due_date < new Date().toISOString().slice(0, 10);
+  const isOverdue = entry.type === 'assignment' && entry.due_date && entry.due_date < todayIso();
+  const hasGrade = entry.type === 'assignment' && entry.grade != null && entry.points_possible;
   return `
     <div class="entry-card" data-id="${entry.id}" data-type="${entry.type}">
       <div class="entry-head">
         <span class="type-badge ${entry.type}">${ENTRY_TYPE_LABELS[entry.type]}</span>
         <span class="entry-title">${escapeHtml(entry.title || '(untitled)')}</span>
         ${entry.type === 'assignment' ? `<span class="due-badge ${isOverdue ? 'overdue' : ''}">${entry.due_date ? `Due ${escapeHtml(formatDate(entry.due_date))}` : 'No due date'}</span>` : ''}
+        ${hasGrade ? `<span class="due-badge">${entry.grade}/${entry.points_possible}</span>` : ''}
         <button class="icon-btn" data-action="edit">Edit</button>
         <button class="icon-btn danger" data-action="delete">Delete</button>
       </div>
@@ -287,7 +289,22 @@ function wireEntryCard(card, entry, sessionId, onChanged) {
       <div class="md-editor">
         <textarea id="edit-body-${entry.id}">${escapeHtml(entry.body_markdown || '')}</textarea>
       </div>
-      ${entry.type === 'assignment' ? `<label class="field-label">Due date</label><input type="date" class="field-input" id="edit-due-${entry.id}" value="${escapeHtml(entry.due_date || '')}" style="max-width:180px;">` : ''}
+      ${entry.type === 'assignment' ? `
+        <div class="control-row" style="margin-top:8px;">
+          <div>
+            <label class="field-label">Due date</label>
+            <input type="date" class="field-input" id="edit-due-${entry.id}" value="${escapeHtml(entry.due_date || '')}" style="max-width:180px;">
+          </div>
+          <div>
+            <label class="field-label">Grade</label>
+            <input type="number" class="field-input" id="edit-grade-${entry.id}" value="${entry.grade ?? ''}" step="any" style="max-width:100px;">
+          </div>
+          <div>
+            <label class="field-label">Out of</label>
+            <input type="number" class="field-input" id="edit-points-${entry.id}" value="${entry.points_possible ?? ''}" step="any" style="max-width:100px;">
+          </div>
+        </div>
+      ` : ''}
       <div class="control-row" style="margin:8px 0;">
         <button class="chip-btn" id="save-entry-${entry.id}">Save</button>
         <button class="chip-btn" id="cancel-entry-${entry.id}">Cancel</button>
@@ -297,10 +314,14 @@ function wireEntryCard(card, entry, sessionId, onChanged) {
     editEl.querySelector(`#save-entry-${entry.id}`).addEventListener('click', async () => {
       const body_markdown = editEl.querySelector(`#edit-body-${entry.id}`).value;
       const dueInput = editEl.querySelector(`#edit-due-${entry.id}`);
+      const gradeInput = editEl.querySelector(`#edit-grade-${entry.id}`);
+      const pointsInput = editEl.querySelector(`#edit-points-${entry.id}`);
       const updated = await api.put(`/api/entries/${entry.id}`, {
         title: entry.title,
         body_markdown,
         due_date: dueInput ? dueInput.value || null : entry.due_date,
+        grade: gradeInput ? gradeInput.value : entry.grade,
+        points_possible: pointsInput ? pointsInput.value : entry.points_possible,
       });
       Object.assign(entry, updated);
       renderView();

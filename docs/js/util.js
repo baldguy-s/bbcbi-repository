@@ -33,6 +33,21 @@ export function formatDate(isoDateStr) {
   return `${m}/${d}/${String(y).slice(-2)}`;
 }
 
+export function formatTime(hhmm) {
+  const [h, m] = hhmm.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${period}`;
+}
+
 export function todayIso() {
-  return new Date().toISOString().slice(0, 10);
+  // Local calendar date, not UTC — toISOString() flips to the next day
+  // several hours early for any timezone west of UTC (e.g. ~8pm Eastern),
+  // which would mark things "overdue" or "due today" incorrectly in the
+  // evening. Matches the equivalent fix in api.js's localIsoDate().
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }

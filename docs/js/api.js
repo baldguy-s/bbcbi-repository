@@ -19,6 +19,7 @@ function emptyDb() {
     semesters: [],
     classes: [],
     class_docs: [],
+    schedule_slots: [],
     sessions: [],
     entries: [],
     files: [],
@@ -30,6 +31,9 @@ export async function initStore() {
   loadingPromise = (async () => {
     const { json } = await gh.readJsonFile(DB_PATH);
     DB = json || emptyDb();
+    // Backfill fields/tables added after the file was first created — the
+    // live notebook.json predates schedule_slots and won't have it.
+    if (!DB.schedule_slots) DB.schedule_slots = [];
   })();
   return loadingPromise;
 }
@@ -44,6 +48,17 @@ function nextId() {
 
 function nowIso() {
   return new Date().toISOString().replace('T', ' ').slice(0, 19);
+}
+
+// Local calendar date as YYYY-MM-DD. Deliberately NOT toISOString().slice(0,10)
+// — that's UTC, which flips to the next day several hours early for any
+// timezone west of UTC (e.g. ~8pm Eastern), making "due today"/"overdue"
+// wrong in the evening for exactly the kind of local, single-user app this is.
+function localIsoDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function nextSortOrder(list, scopeKey, scopeVal) {
@@ -90,6 +105,7 @@ function classBreadcrumb(classId) {
     className: cls.name,
     semesterId: sem ? sem.id : null,
     semesterLabel: sem ? sem.label : '',
+    semesterArchived: sem ? !!sem.archived : false,
     yearId: year ? year.id : null,
     yearLabel: year ? year.label : '',
   };
@@ -149,6 +165,7 @@ on('DELETE', '/api/years/:id', async (p) => {
   DB.entries = DB.entries.filter((e) => !sessionIds.includes(e.session_id));
   DB.sessions = DB.sessions.filter((s) => !sessionIds.includes(s.id));
   DB.class_docs = DB.class_docs.filter((d) => !docIds.includes(d.id));
+  DB.schedule_slots = DB.schedule_slots.filter((sl) => !classIds.includes(sl.class_id));
   DB.classes = DB.classes.filter((c) => !classIds.includes(c.id));
   DB.semesters = DB.semesters.filter((s) => !semIds.includes(s.id));
   DB.years = DB.years.filter((y) => y.id !== yearId);
@@ -163,7 +180,10 @@ on('GET', '/api/years/:yearId/semesters', (p) =>
 on('POST', '/api/years/:yearId/semesters', async (p, body) => {
   if (!body?.label) { const e = new Error('label is required'); e.status = 400; throw e; }
   const yearId = n(p.yearId);
-  const sem = { id: nextId(), year_id: yearId, label: body.label, sort_order: nextSortOrder(DB.semesters, 'year_id', yearId) };
+  const sem = {
+    id: nextId(), year_id: yearId, label: body.label, sort_order: nextSortOrder(DB.semesters, 'year_id', yearId),
+    archived: false,
+  };
   DB.semesters.push(sem);
   await save(`Add semester "${sem.label}"`);
   return sem;
@@ -187,6 +207,13 @@ on('PATCH', '/api/semesters/:id/reorder', async (p, body) => {
   if (moved) await save('Reorder semesters');
   return { moved };
 });
+on('PATCH', '/api/semesters/:id/archive', async (p, body) => {
+  const sem = DB.semesters.find((s) => s.id === n(p.id));
+  if (!sem) throw notFound();
+  sem.archived = !!body.archived;
+  await save(`${sem.archived ? 'Archive' : 'Unarchive'} semester "${sem.label}"`);
+  return sem;
+});
 on('DELETE', '/api/semesters/:id', async (p) => {
   const semId = n(p.id);
   const classIds = DB.classes.filter((c) => c.semester_id === semId).map((c) => c.id);
@@ -199,6 +226,7 @@ on('DELETE', '/api/semesters/:id', async (p) => {
   DB.entries = DB.entries.filter((e) => !sessionIds.includes(e.session_id));
   DB.sessions = DB.sessions.filter((s) => !sessionIds.includes(s.id));
   DB.class_docs = DB.class_docs.filter((d) => !docIds.includes(d.id));
+  DB.schedule_slots = DB.schedule_slots.filter((sl) => !classIds.includes(sl.class_id));
   DB.classes = DB.classes.filter((c) => !classIds.includes(c.id));
   DB.semesters = DB.semesters.filter((s) => s.id !== semId);
   await save('Delete semester');
@@ -214,6 +242,7 @@ on('POST', '/api/semesters/:semesterId/classes', async (p, body) => {
   const semesterId = n(p.semesterId);
   const cls = {
     id: nextId(), semester_id: semesterId, name: body.name, professor: body.professor || null,
+    professor_email: body.professor_email || null, office_hours: body.office_hours || null,
     sort_order: nextSortOrder(DB.classes, 'semester_id', semesterId),
   };
   DB.classes.push(cls);
@@ -230,6 +259,8 @@ on('PATCH', '/api/classes/:id', async (p, body) => {
   if (!cls) throw notFound();
   cls.name = body.name;
   cls.professor = body.professor || null;
+  cls.professor_email = body.professor_email || null;
+  cls.office_hours = body.office_hours || null;
   await save(`Update class "${cls.name}"`);
   return cls;
 });
@@ -251,6 +282,7 @@ on('DELETE', '/api/classes/:id', async (p) => {
   DB.entries = DB.entries.filter((e) => !sessionIds.includes(e.session_id));
   DB.sessions = DB.sessions.filter((s) => !sessionIds.includes(s.id));
   DB.class_docs = DB.class_docs.filter((d) => !docIds.includes(d.id));
+  DB.schedule_slots = DB.schedule_slots.filter((sl) => sl.class_id !== classId);
   DB.classes = DB.classes.filter((c) => c.id !== classId);
   await save('Delete class');
   return { ok: true };
@@ -276,6 +308,30 @@ on('PUT', '/api/classes/:id/docs/:docType', async (p, body) => {
   doc.updated_at = nowIso();
   await save(`Update ${p.docType}`);
   return doc;
+});
+
+// ---- class schedule (recurring day/time slots) ----
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+on('GET', '/api/classes/:classId/schedule', (p) =>
+  DB.schedule_slots
+    .filter((sl) => sl.class_id === n(p.classId))
+    .sort((a, b) => a.day_of_week - b.day_of_week || a.start_time.localeCompare(b.start_time))
+);
+on('POST', '/api/classes/:classId/schedule', async (p, body) => {
+  const day = Number(body.day_of_week);
+  if (!Number.isInteger(day) || day < 0 || day > 6) { const e = new Error('day_of_week must be 0-6 (Sun-Sat)'); e.status = 400; throw e; }
+  if (!body.start_time || !body.end_time) { const e = new Error('start_time and end_time are required'); e.status = 400; throw e; }
+  const slot = { id: nextId(), class_id: n(p.classId), day_of_week: day, start_time: body.start_time, end_time: body.end_time };
+  DB.schedule_slots.push(slot);
+  await save(`Add ${DAY_LABELS[day]} schedule slot`);
+  return slot;
+});
+on('DELETE', '/api/schedule/:id', async (p) => {
+  const slot = DB.schedule_slots.find((sl) => sl.id === n(p.id));
+  if (!slot) throw notFound();
+  DB.schedule_slots = DB.schedule_slots.filter((sl) => sl.id !== slot.id);
+  await save('Remove schedule slot');
+  return { ok: true };
 });
 
 // ---- sessions ----
@@ -336,7 +392,10 @@ on('POST', '/api/sessions/:sessionId/entries', async (p, body) => {
   const now = nowIso();
   const entry = {
     id: nextId(), session_id: n(p.sessionId), type: body.type, title: body.title || '',
-    body_markdown: body.body_markdown || '', due_date: body.due_date || null, created_at: now, updated_at: now,
+    body_markdown: body.body_markdown || '', due_date: body.due_date || null,
+    grade: body.grade != null && body.grade !== '' ? Number(body.grade) : null,
+    points_possible: body.points_possible != null && body.points_possible !== '' ? Number(body.points_possible) : null,
+    created_at: now, updated_at: now,
   };
   DB.entries.push(entry);
   await save(`Add ${entry.type}: "${entry.title || '(untitled)'}"`);
@@ -347,10 +406,11 @@ on('GET', '/api/entries/upcoming', () => {
     .filter((e) => e.type === 'assignment' && e.due_date)
     .map((e) => {
       const sb = sessionBreadcrumb(e.session_id) || {};
-      return { ...e, session_topic: sb.sessionTopic, session_date: sb.sessionDate, class_id: sb.classId, class_name: sb.className, semester_id: sb.semesterId, semester_label: sb.semesterLabel, year_id: sb.yearId, year_label: sb.yearLabel };
+      return { ...e, session_topic: sb.sessionTopic, session_date: sb.sessionDate, class_id: sb.classId, class_name: sb.className, semester_id: sb.semesterId, semester_label: sb.semesterLabel, semester_archived: sb.semesterArchived, year_id: sb.yearId, year_label: sb.yearLabel };
     })
+    .filter((r) => !r.semester_archived)
     .sort((a, b) => (a.due_date || '').localeCompare(b.due_date || ''));
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localIsoDate(new Date());
   return rows.map((r) => ({ ...r, overdue: r.due_date < today }));
 });
 on('PUT', '/api/entries/:id', async (p, body) => {
@@ -359,8 +419,22 @@ on('PUT', '/api/entries/:id', async (p, body) => {
   entry.title = body.title || '';
   entry.body_markdown = body.body_markdown || '';
   entry.due_date = body.due_date || null;
+  entry.grade = body.grade != null && body.grade !== '' ? Number(body.grade) : null;
+  entry.points_possible = body.points_possible != null && body.points_possible !== '' ? Number(body.points_possible) : null;
   entry.updated_at = nowIso();
   await save(`Update entry "${entry.title || '(untitled)'}"`);
+  return entry;
+});
+on('PATCH', '/api/entries/:id', async (p, body) => {
+  // Lightweight partial update — used by Admin's due-date list, which only
+  // ever touches due_date/grade/points_possible, not the entry's title/body.
+  const entry = DB.entries.find((e) => e.id === n(p.id));
+  if (!entry) throw notFound();
+  if ('due_date' in body) entry.due_date = body.due_date || null;
+  if ('grade' in body) entry.grade = body.grade != null && body.grade !== '' ? Number(body.grade) : null;
+  if ('points_possible' in body) entry.points_possible = body.points_possible != null && body.points_possible !== '' ? Number(body.points_possible) : null;
+  entry.updated_at = nowIso();
+  await save(`Update due date/grade for "${entry.title || '(untitled)'}"`);
   return entry;
 });
 on('DELETE', '/api/entries/:id', async (p) => {
@@ -522,6 +596,84 @@ on('GET', '/api/scripture/books/:book/entries', (p, body, query) => {
       classId: sb?.classId, className: sb?.className, semesterLabel: sb?.semesterLabel, yearLabel: sb?.yearLabel,
     };
   });
+});
+
+// ---- admin: due-date management + grades + this-week dashboard ----
+
+// Every assignment entry regardless of due_date (unlike /api/entries/upcoming,
+// which only lists ones that already have one) — Admin needs to see and set
+// dates on assignments that don't have one yet, not just edit existing ones.
+on('GET', '/api/admin/assignments', () => {
+  return DB.entries
+    .filter((e) => e.type === 'assignment')
+    .map((e) => {
+      const sb = sessionBreadcrumb(e.session_id) || {};
+      return {
+        ...e, session_topic: sb.sessionTopic, class_id: sb.classId, class_name: sb.className,
+        semester_id: sb.semesterId, semester_label: sb.semesterLabel, semester_archived: sb.semesterArchived,
+        year_id: sb.yearId, year_label: sb.yearLabel,
+      };
+    })
+    .filter((r) => !r.semester_archived)
+    .sort((a, b) => {
+      if (!a.due_date && !b.due_date) return a.class_name.localeCompare(b.class_name);
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return a.due_date.localeCompare(b.due_date);
+    });
+});
+
+on('GET', '/api/classes/:id/grade-summary', (p) => {
+  const classId = n(p.id);
+  const sessionIds = DB.sessions.filter((s) => s.class_id === classId).map((s) => s.id);
+  const graded = DB.entries.filter(
+    (e) => sessionIds.includes(e.session_id) && e.type === 'assignment' && e.grade != null && e.points_possible
+  );
+  const totalEarned = graded.reduce((sum, e) => sum + e.grade, 0);
+  const totalPossible = graded.reduce((sum, e) => sum + e.points_possible, 0);
+  const assignmentCount = DB.entries.filter((e) => sessionIds.includes(e.session_id) && e.type === 'assignment').length;
+  return {
+    gradedCount: graded.length,
+    assignmentCount,
+    percent: totalPossible > 0 ? Math.round((totalEarned / totalPossible) * 1000) / 10 : null,
+  };
+});
+
+on('GET', '/api/dashboard/this-week', () => {
+  const today = new Date();
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    return { date: localIsoDate(d), dayOfWeek: d.getDay() };
+  });
+  const weekEnd = days[days.length - 1].date;
+  const todayStr = days[0].date;
+
+  const assignments = DB.entries
+    .filter((e) => e.type === 'assignment' && e.due_date && e.due_date <= weekEnd)
+    .map((e) => {
+      const sb = sessionBreadcrumb(e.session_id) || {};
+      return { ...e, session_topic: sb.sessionTopic, class_id: sb.classId, class_name: sb.className, semester_archived: sb.semesterArchived };
+    })
+    .filter((r) => !r.semester_archived)
+    .map((r) => ({ ...r, overdue: r.due_date < todayStr }))
+    .sort((a, b) => a.due_date.localeCompare(b.due_date));
+
+  const sessions = [];
+  for (const day of days) {
+    for (const slot of DB.schedule_slots) {
+      if (slot.day_of_week !== day.dayOfWeek) continue;
+      const cb = classBreadcrumb(slot.class_id);
+      if (!cb || cb.semesterArchived) continue;
+      sessions.push({
+        date: day.date, dayLabel: DAY_LABELS[day.dayOfWeek], classId: cb.classId, className: cb.className,
+        startTime: slot.start_time, endTime: slot.end_time,
+      });
+    }
+  }
+  sessions.sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
+
+  return { today: todayStr, weekEnd, assignments, sessions };
 });
 
 async function request(method, fullPath, body) {
