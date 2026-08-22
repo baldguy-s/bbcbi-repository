@@ -61,7 +61,12 @@
       "sort_order": 2,
       "instructor_name": "Pastor",
       "instructor_email": "wmiller@biblebaptistfairfield.com",
-      "instructor_custom_fields": []
+      "instructor_custom_fields": [
+        {
+          "label": "Phone",
+          "value": "1 (513) 477-9165"
+        }
+      ]
     },
     {
       "id": 112,
