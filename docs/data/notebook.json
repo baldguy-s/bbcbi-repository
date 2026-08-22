@@ -81,7 +81,9 @@
       "sort_order": 3,
       "instructor_name": "Dr Tom Lamkin",
       "instructor_email": null,
-      "instructor_custom_fields": []
+      "instructor_custom_fields": [],
+      "start_date": "2026-09-15",
+      "end_date": null
     }
   ],
   "class_docs": [
