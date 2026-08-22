@@ -1,5 +1,5 @@
 {
-  "_nextId": 30,
+  "_nextId": 31,
   "years": [
     {
       "id": 9,
@@ -72,6 +72,13 @@
     {
       "id": 14,
       "class_id": 12,
+      "session_date": "2025-09-01",
+      "topic": "Intro to Romans",
+      "sort_order": 0
+    },
+    {
+      "id": 30,
+      "class_id": 28,
       "session_date": "2025-09-01",
       "topic": "Intro to Romans",
       "sort_order": 0
