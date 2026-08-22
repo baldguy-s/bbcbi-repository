@@ -300,6 +300,7 @@ on('POST', '/api/semesters/:semesterId/classes', async (p, body) => {
   const cls = {
     id: nextId(), semester_id: semesterId, name: body.name, instructor_name: body.instructor_name || null,
     instructor_email: body.instructor_email || null, instructor_custom_fields: [],
+    start_date: body.start_date || null, end_date: body.end_date || null,
     sort_order: nextSortOrder(DB.classes, 'semester_id', semesterId),
   };
   DB.classes.push(cls);
@@ -317,6 +318,8 @@ on('PATCH', '/api/classes/:id', async (p, body) => {
   cls.name = body.name;
   cls.instructor_name = body.instructor_name || null;
   cls.instructor_email = body.instructor_email || null;
+  cls.start_date = body.start_date || null;
+  cls.end_date = body.end_date || null;
   if (Array.isArray(body.instructor_custom_fields)) {
     cls.instructor_custom_fields = body.instructor_custom_fields
       .filter((f) => f && f.label && f.label.trim())

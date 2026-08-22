@@ -165,6 +165,10 @@ async function renderClassLevel(container, classId, tab, focusSessionId) {
     ? schedule.map((s) => `${DAY_LABELS[s.day_of_week]} ${formatTime(s.start_time)}–${formatTime(s.end_time)}`).join(', ')
     : null;
 
+  const datesLine = cls.start_date || cls.end_date
+    ? [cls.start_date ? formatDate(cls.start_date) : '?', cls.end_date ? formatDate(cls.end_date) : '?'].join(' – ')
+    : null;
+
   container.innerHTML = `
     <div class="breadcrumb-nav">
       <a href="#/notebook">Notebook</a> &rsaquo;
@@ -172,8 +176,9 @@ async function renderClassLevel(container, classId, tab, focusSessionId) {
       <a href="#/notebook/year/${yearId}/semester/${semesterId}">${escapeHtml(semester ? semester.label : '')}</a>
     </div>
     <h2>${escapeHtml(cls.name)}</h2>
-    ${scheduleLine || gradeSummary.gradedCount > 0 || contactLines.length ? `
+    ${scheduleLine || datesLine || gradeSummary.gradedCount > 0 || contactLines.length ? `
       <div class="class-info-card">
+        ${datesLine ? `<div>Runs: ${escapeHtml(datesLine)}</div>` : ''}
         ${scheduleLine ? `<div>Meets: ${scheduleLine}</div>` : ''}
         ${gradeSummary.gradedCount > 0 ? `<div>Grade average: <strong>${gradeSummary.percent}%</strong> <span class="row-sub">(${gradeSummary.gradedCount}/${gradeSummary.assignmentCount} assignments graded)</span></div>` : ''}
         ${contactLines.length ? `
@@ -195,7 +200,7 @@ async function renderClassLevel(container, classId, tab, focusSessionId) {
   `;
 
   container.querySelector('#print-class-btn').addEventListener('click', () => {
-    printClassNotes(cls, contactLines, scheduleLine);
+    printClassNotes(cls, contactLines, scheduleLine, datesLine);
   });
 
   const contactToggle = container.querySelector('#contact-toggle');
@@ -225,7 +230,7 @@ async function renderClassLevel(container, classId, tab, focusSessionId) {
 // quick-capture button (all irrelevant on paper) never end up in the print
 // output. Uses the app's own tokens so it still looks like this app, not a
 // generic browser printout.
-async function printClassNotes(cls, contactLines, scheduleLine) {
+async function printClassNotes(cls, contactLines, scheduleLine, datesLine) {
   const [doc, sessions] = await Promise.all([
     api.get(`/api/classes/${cls.id}/docs/syllabus`),
     api.get(`/api/classes/${cls.id}/sessions`),
@@ -273,7 +278,7 @@ async function printClassNotes(cls, contactLines, scheduleLine) {
 </style>
 </head><body>
   <h1>${escapeHtml(cls.name)}</h1>
-  ${contactLines.length || scheduleLine ? `<h2>${[scheduleLine, contactLines.length ? contactLines.join(' &middot; ').replace(/<[^>]+>/g, '') : ''].filter(Boolean).join(' — ')}</h2>` : ''}
+  ${contactLines.length || scheduleLine || datesLine ? `<h2>${[datesLine, scheduleLine, contactLines.length ? contactLines.join(' &middot; ').replace(/<[^>]+>/g, '') : ''].filter(Boolean).join(' — ')}</h2>` : ''}
   ${doc.body_markdown ? `<div class="p-doc">${renderMarkdown(doc.body_markdown)}</div>` : ''}
   ${sessionDetails.map(sessionHtml).join('')}
 </body></html>`);

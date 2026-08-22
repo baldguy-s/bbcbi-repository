@@ -278,6 +278,16 @@ async function loadClassEditor(bodyEl, cls) {
   bodyEl.innerHTML = `
     <label class="field-label">Class name</label>
     <input type="text" class="field-input" id="cls-name-${cls.id}" value="${escapeHtml(cls.name)}">
+    <div class="control-row">
+      <div>
+        <label class="field-label">Start date</label>
+        <input type="date" class="field-input" id="cls-start-${cls.id}" value="${escapeHtml(cls.start_date || '')}" style="max-width:160px;">
+      </div>
+      <div>
+        <label class="field-label">End date</label>
+        <input type="date" class="field-input" id="cls-end-${cls.id}" value="${escapeHtml(cls.end_date || '')}" style="max-width:160px;">
+      </div>
+    </div>
     <label class="field-label">Instructor</label>
     <input type="text" class="field-input" id="cls-prof-${cls.id}" value="${escapeHtml(cls.instructor_name || '')}">
     <label class="field-label">Instructor email</label>
@@ -345,6 +355,8 @@ async function loadClassEditor(bodyEl, cls) {
     const saveBtn = bodyEl.querySelector(`#cls-save-${cls.id}`);
     const updated = await api.patch(`/api/classes/${cls.id}`, {
       name: bodyEl.querySelector(`#cls-name-${cls.id}`).value.trim(),
+      start_date: bodyEl.querySelector(`#cls-start-${cls.id}`).value || null,
+      end_date: bodyEl.querySelector(`#cls-end-${cls.id}`).value || null,
       instructor_name: bodyEl.querySelector(`#cls-prof-${cls.id}`).value.trim(),
       instructor_email: bodyEl.querySelector(`#cls-email-${cls.id}`).value.trim(),
       instructor_custom_fields: customFields,
