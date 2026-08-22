@@ -1,5 +1,5 @@
 {
-  "_nextId": 136,
+  "_nextId": 137,
   "years": [
     {
       "id": 39,
@@ -83,6 +83,15 @@
       "instructor_name": "Dr Tom Lamkin",
       "instructor_email": null,
       "instructor_custom_fields": []
+    },
+    {
+      "id": 136,
+      "semester_id": 135,
+      "name": "UITEST3-Class",
+      "instructor_name": null,
+      "instructor_email": null,
+      "instructor_custom_fields": [],
+      "sort_order": 0
     }
   ],
   "class_docs": [
