@@ -133,12 +133,28 @@ async function commitTreeEntries(entries, message) {
 
 // ===== notebook.json (the whole-tree database) =====
 
+// Reads via the raw ref -> commit -> tree -> blob chain rather than the
+// Contents API's convenience GET. Confirmed by observation: reloading the
+// page within a couple seconds of a write could see the *previous* state —
+// the Contents API's read path lags behind the true git state under that
+// timing in a way the low-level, content-addressed blob/tree/commit
+// endpoints below (used for every write) do not.
 export async function readJsonFile(path) {
   try {
-    const data = await ghFetch(
-      `/repos/${GH_OWNER}/${GH_REPO}/contents/${repoPath(path)}?ref=${GH_BRANCH}`
-    );
-    return { json: JSON.parse(base64ToUtf8(data.content)) };
+    const base = await primeChain();
+    const segments = repoPath(path).split('/');
+    let treeSha = base.treeSha;
+    for (let i = 0; i < segments.length - 1; i++) {
+      const tree = await ghFetch(`/repos/${GH_OWNER}/${GH_REPO}/git/trees/${treeSha}`);
+      const entry = tree.tree.find((t) => t.path === segments[i]);
+      if (!entry) return { json: null };
+      treeSha = entry.sha;
+    }
+    const finalTree = await ghFetch(`/repos/${GH_OWNER}/${GH_REPO}/git/trees/${treeSha}`);
+    const fileEntry = finalTree.tree.find((t) => t.path === segments[segments.length - 1]);
+    if (!fileEntry) return { json: null };
+    const blob = await ghFetch(`/repos/${GH_OWNER}/${GH_REPO}/git/blobs/${fileEntry.sha}`);
+    return { json: JSON.parse(base64ToUtf8(blob.content)) };
   } catch (e) {
     if (e.status === 404) return { json: null };
     throw e;
