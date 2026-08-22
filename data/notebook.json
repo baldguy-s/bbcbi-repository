@@ -1,5 +1,5 @@
 {
-  "_nextId": 23,
+  "_nextId": 24,
   "years": [
     {
       "id": 9,
@@ -104,6 +104,16 @@
       "due_date": "2020-01-01",
       "created_at": "2026-08-22 13:48:45",
       "updated_at": "2026-08-22 13:48:45"
+    },
+    {
+      "id": 23,
+      "session_id": 22,
+      "type": "note",
+      "title": "Grace notes",
+      "body_markdown": "See Rom. 8:28-30 and John 3:16 for the heart of it.",
+      "due_date": null,
+      "created_at": "2026-08-22 13:49:27",
+      "updated_at": "2026-08-22 13:49:27"
     }
   ],
   "files": []
