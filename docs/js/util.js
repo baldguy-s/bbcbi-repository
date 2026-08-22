@@ -56,6 +56,35 @@ export function formatTime(hhmm) {
   return `${h12}:${String(m).padStart(2, '0')} ${period}`;
 }
 
+// Detects whether a custom instructor-field value is something clickable
+// (phone, email, or website/social link) and, if so, what it should link to.
+// Purely value-shape-based (not label-based) — a custom field's label is
+// free text the user typed ("Cell", "Office", "Twitter", ...) and isn't
+// reliable to pattern-match on, but the value itself usually looks
+// distinctly like a phone number, an email, or a URL regardless of label.
+export function linkifyFieldValue(rawValue) {
+  const v = (rawValue || '').trim();
+  if (!v) return null;
+
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+    return { href: `mailto:${v}`, text: v, external: false };
+  }
+
+  const digitsOnly = v.replace(/\D/g, '');
+  if (/^[+]?[\d\s().-]+$/.test(v) && digitsOnly.length >= 7 && digitsOnly.length <= 15) {
+    return { href: `tel:${v.replace(/[^\d+]/g, '')}`, text: v, external: false };
+  }
+
+  // The bare-domain fallback requires a 2+ char first label specifically to
+  // avoid turning academic-degree abbreviations like "M.Div" or "D.Min"
+  // (single-letter label + a real word) into bogus links.
+  if (/^(https?:\/\/|www\.)\S+$/i.test(v) || /^[a-z0-9-]{2,}(\.[a-z0-9-]+)*\.[a-z]{2,}(\/\S*)?$/i.test(v)) {
+    return { href: /^https?:\/\//i.test(v) ? v : `https://${v}`, text: v, external: true };
+  }
+
+  return null;
+}
+
 export function todayIso() {
   // Local calendar date, not UTC — toISOString() flips to the next day
   // several hours early for any timezone west of UTC (e.g. ~8pm Eastern),

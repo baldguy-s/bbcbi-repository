@@ -1,10 +1,20 @@
 import { api } from './api.js';
-import { escapeHtml, renderMarkdown, formatTime, formatDate, flashSaved } from './util.js';
+import { escapeHtml, renderMarkdown, formatTime, formatDate, flashSaved, linkifyFieldValue } from './util.js';
 import { navigate, setLastUpdated, currentRenderToken } from './app.js';
 import { renderSessionsTab } from './session.js';
 import { attachUploadWidget, renderFileChips, attachFileDeleteHandler } from './upload.js';
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+// A custom instructor field's value is rendered as a real tel:/mailto:/https:
+// link whenever it looks like one (phone number, email, or website/social
+// handle) — e.g. a "Cell" field showing a phone number should let you tap to
+// call it, not just read digits.
+function contactValueHtml(value) {
+  const link = linkifyFieldValue(value);
+  if (!link) return escapeHtml(value || '');
+  return `<a href="${escapeHtml(link.href)}"${link.external ? ' target="_blank" rel="noopener"' : ''}>${escapeHtml(link.text)}</a>`;
+}
 
 // Read-only browsing list — Years/Semesters/Classes structure is managed in
 // Admin now; Notebook just navigates. (Sessions/Entries stay fully editable
@@ -147,7 +157,8 @@ async function renderClassLevel(container, classId, tab, focusSessionId) {
   if (cls.instructor_name) contactLines.push(escapeHtml(cls.instructor_name));
   if (cls.instructor_email) contactLines.push(`<a href="mailto:${escapeHtml(cls.instructor_email)}">${escapeHtml(cls.instructor_email)}</a>`);
   for (const f of cls.instructor_custom_fields || []) {
-    if (f.label) contactLines.push(`${escapeHtml(f.label)}: ${escapeHtml(f.value || '')}`);
+    if (!f.label) continue;
+    contactLines.push(`${escapeHtml(f.label)}: ${contactValueHtml(f.value)}`);
   }
 
   const scheduleLine = schedule.length
