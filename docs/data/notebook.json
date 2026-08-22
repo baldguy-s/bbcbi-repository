@@ -10,11 +10,6 @@
       "id": 40,
       "label": "2025 - 2026",
       "sort_order": 0
-    },
-    {
-      "id": 157,
-      "label": "UITEST5-Year",
-      "sort_order": 2
     }
   ],
   "semesters": [
@@ -37,13 +32,6 @@
       "year_id": 39,
       "label": "Spring ‘27",
       "sort_order": 1,
-      "archived": false
-    },
-    {
-      "id": 158,
-      "year_id": 157,
-      "label": "UITEST5-Sem",
-      "sort_order": 0,
       "archived": false
     }
   ],
@@ -88,17 +76,6 @@
       "instructor_name": "Dr Tom Lamkin",
       "instructor_email": null,
       "instructor_custom_fields": []
-    },
-    {
-      "id": 159,
-      "semester_id": 158,
-      "name": "UITEST5-Class",
-      "instructor_name": null,
-      "instructor_email": null,
-      "instructor_custom_fields": [],
-      "start_date": "2026-01-15",
-      "end_date": "2026-05-01",
-      "sort_order": 0
     }
   ],
   "class_docs": [
