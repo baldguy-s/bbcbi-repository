@@ -1,5 +1,5 @@
 {
-  "_nextId": 133,
+  "_nextId": 134,
   "years": [
     {
       "id": 39,
@@ -120,7 +120,20 @@
     }
   ],
   "entries": [],
-  "files": [],
+  "files": [
+    {
+      "id": 133,
+      "entry_id": null,
+      "class_doc_id": 131,
+      "session_id": null,
+      "inbox": 0,
+      "original_filename": "uitest3-file.txt",
+      "path": "uploads/classdoc-131/a17ad641-a9ad-4008-9e28-cc320f4d8ecd.txt",
+      "mime_type": "text/plain",
+      "size_bytes": 28,
+      "uploaded_at": "2026-08-22 16:48:50"
+    }
+  ],
   "schedule_slots": [
     {
       "id": 107,
