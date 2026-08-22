@@ -1,5 +1,5 @@
 {
-  "_nextId": 78,
+  "_nextId": 79,
   "years": [
     {
       "id": 39,
@@ -41,5 +41,13 @@
   "sessions": [],
   "entries": [],
   "files": [],
-  "schedule_slots": []
+  "schedule_slots": [
+    {
+      "id": 78,
+      "class_id": 77,
+      "day_of_week": 2,
+      "start_time": "10:00",
+      "end_time": "10:50"
+    }
+  ]
 }
