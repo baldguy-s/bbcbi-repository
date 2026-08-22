@@ -40,37 +40,37 @@
       "id": 106,
       "semester_id": 104,
       "name": "Hermaneutics",
-      "professor": "Bro. Barry Wilson",
-      "professor_email": "wbarrypreach@gmail.com",
-      "office_hours": null,
-      "sort_order": 0
+      "sort_order": 0,
+      "instructor_name": "Bro. Barry Wilson",
+      "instructor_email": "wbarrypreach@gmail.com",
+      "instructor_custom_fields": []
     },
     {
       "id": 108,
       "semester_id": 104,
       "name": "Major Prophets",
-      "professor": "Bro. Greg Stephens",
-      "professor_email": "stigman1@outlook.com",
-      "office_hours": null,
-      "sort_order": 1
+      "sort_order": 1,
+      "instructor_name": "Bro. Greg Stephens",
+      "instructor_email": "stigman1@outlook.com",
+      "instructor_custom_fields": []
     },
     {
       "id": 110,
       "semester_id": 104,
       "name": "Practical Pastoring & Leadership",
-      "professor": "Pastor",
-      "professor_email": "wmiller@biblebaptistfairfield.com",
-      "office_hours": null,
-      "sort_order": 2
+      "sort_order": 2,
+      "instructor_name": "Pastor",
+      "instructor_email": "wmiller@biblebaptistfairfield.com",
+      "instructor_custom_fields": []
     },
     {
       "id": 112,
       "semester_id": 104,
       "name": "Biblical Creationism",
-      "professor": "Dr Tom Lamkin",
-      "professor_email": null,
-      "office_hours": null,
-      "sort_order": 3
+      "sort_order": 3,
+      "instructor_name": "Dr Tom Lamkin",
+      "instructor_email": null,
+      "instructor_custom_fields": []
     }
   ],
   "class_docs": [
