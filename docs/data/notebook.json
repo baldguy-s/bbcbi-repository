@@ -1,5 +1,5 @@
 {
-  "_nextId": 17,
+  "_nextId": 18,
   "years": [
     {
       "id": 12,
@@ -34,7 +34,15 @@
       "sort_order": 0
     }
   ],
-  "class_docs": [],
+  "class_docs": [
+    {
+      "id": 17,
+      "class_id": 16,
+      "doc_type": "syllabus",
+      "body_markdown": "",
+      "updated_at": null
+    }
+  ],
   "sessions": [],
   "entries": [],
   "files": []
