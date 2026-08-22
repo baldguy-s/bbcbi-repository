@@ -205,3 +205,13 @@ export function fileToBase64(file) {
 }
 
 export const REPO_INFO = { owner: GH_OWNER, repo: GH_REPO, branch: GH_BRANCH };
+
+// Test-only: the real app never needs this — a page only ever has one
+// in-memory chain, primed once per load, matching the single-browser-tab
+// reality it runs in. Test scripts that mix a Node-side writer (e.g. cleanup)
+// with a separate browser session hitting the same repo need to drop the
+// cached chain between them, since the browser's commits move the real ref
+// forward in a way this process's cached chain has no way to observe.
+export function _resetChainForTesting() {
+  chain = null;
+}
