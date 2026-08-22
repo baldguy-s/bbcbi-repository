@@ -1,5 +1,5 @@
 {
-  "_nextId": 101,
+  "_nextId": 102,
   "years": [
     {
       "id": 39,
@@ -38,7 +38,15 @@
     }
   ],
   "class_docs": [],
-  "sessions": [],
+  "sessions": [
+    {
+      "id": 101,
+      "class_id": 99,
+      "session_date": null,
+      "topic": "UITEST Session",
+      "sort_order": 0
+    }
+  ],
   "entries": [],
   "files": [],
   "schedule_slots": [
