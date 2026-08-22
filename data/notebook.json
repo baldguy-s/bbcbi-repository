@@ -4,12 +4,12 @@
     {
       "id": 9,
       "label": "TEST-2025-2026",
-      "sort_order": 0
+      "sort_order": 1
     },
     {
       "id": 10,
       "label": "TEST-2026-2027",
-      "sort_order": 1
+      "sort_order": 0
     }
   ],
   "semesters": [],
