@@ -31,9 +31,9 @@
       "id": 83,
       "semester_id": 82,
       "name": "UITEST-Class",
-      "professor": null,
-      "professor_email": null,
-      "office_hours": null,
+      "professor": "Dr. Test",
+      "professor_email": "test@example.com",
+      "office_hours": "Mon 1-2pm",
       "sort_order": 0
     }
   ],
