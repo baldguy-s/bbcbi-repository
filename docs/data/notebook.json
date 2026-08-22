@@ -1,5 +1,5 @@
 {
-  "_nextId": 22,
+  "_nextId": 23,
   "years": [
     {
       "id": 12,
@@ -10,6 +10,11 @@
       "id": 21,
       "label": "TEST-2025-2026",
       "sort_order": 1
+    },
+    {
+      "id": 22,
+      "label": "TEST-2026-2027",
+      "sort_order": 2
     }
   ],
   "semesters": [],
