@@ -10,11 +10,6 @@
       "id": 40,
       "label": "2025 - 2026",
       "sort_order": 0
-    },
-    {
-      "id": 121,
-      "label": "UITEST2-Year",
-      "sort_order": 2
     }
   ],
   "semesters": [
@@ -37,13 +32,6 @@
       "year_id": 39,
       "label": "Spring",
       "sort_order": 1,
-      "archived": false
-    },
-    {
-      "id": 122,
-      "year_id": 121,
-      "label": "UITEST2-Sem",
-      "sort_order": 0,
       "archived": false
     }
   ],
@@ -83,20 +71,6 @@
       "instructor_name": "Dr Tom Lamkin",
       "instructor_email": null,
       "instructor_custom_fields": []
-    },
-    {
-      "id": 123,
-      "semester_id": 122,
-      "name": "UITEST2-Class",
-      "instructor_name": "Dr. Test",
-      "instructor_email": "test@example.com",
-      "instructor_custom_fields": [
-        {
-          "label": "Twitter",
-          "value": "@drtest"
-        }
-      ],
-      "sort_order": 0
     }
   ],
   "class_docs": [
@@ -106,38 +80,10 @@
       "doc_type": "syllabus",
       "body_markdown": "",
       "updated_at": null
-    },
-    {
-      "id": 125,
-      "class_id": 123,
-      "doc_type": "syllabus",
-      "body_markdown": "Course description here.",
-      "updated_at": "2026-08-22 16:32:34"
     }
   ],
-  "sessions": [
-    {
-      "id": 126,
-      "class_id": 123,
-      "session_date": "60822-02-02",
-      "topic": "UITEST2 Session Topic",
-      "sort_order": 0
-    }
-  ],
-  "entries": [
-    {
-      "id": 127,
-      "session_id": 126,
-      "type": "assignment",
-      "title": "UITEST2 Assignment",
-      "body_markdown": "",
-      "due_date": "2026-08-22",
-      "grade": null,
-      "points_possible": null,
-      "created_at": "2026-08-22 16:32:36",
-      "updated_at": "2026-08-22 16:32:36"
-    }
-  ],
+  "sessions": [],
+  "entries": [],
   "files": [],
   "schedule_slots": [
     {
@@ -167,13 +113,6 @@
       "day_of_week": 2,
       "start_time": "20:00",
       "end_time": "21:20"
-    },
-    {
-      "id": 124,
-      "class_id": 123,
-      "day_of_week": 6,
-      "start_time": "10:00",
-      "end_time": "10:50"
     }
   ]
 }
