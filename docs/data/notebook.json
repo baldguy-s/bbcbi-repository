@@ -1,5 +1,5 @@
 {
-  "_nextId": 149,
+  "_nextId": 150,
   "years": [
     {
       "id": 39,
@@ -145,6 +145,18 @@
       "mime_type": "text/plain",
       "size_bytes": 28,
       "uploaded_at": "2026-08-22 16:50:35"
+    },
+    {
+      "id": 149,
+      "entry_id": null,
+      "class_doc_id": null,
+      "session_id": null,
+      "inbox": 1,
+      "original_filename": "Quick note 2026-08-22 16:50.txt",
+      "path": "uploads/inbox/d77bddc9-55db-4301-a6b7-37e82763ea61.txt",
+      "mime_type": "text/plain",
+      "size_bytes": 23,
+      "uploaded_at": "2026-08-22 16:50:41"
     }
   ],
   "schedule_slots": [
