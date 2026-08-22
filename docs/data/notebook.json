@@ -10,65 +10,13 @@
       "id": 40,
       "label": "2025 - 2026",
       "sort_order": 0
-    },
-    {
-      "id": 69,
-      "label": "UITEST-Year",
-      "sort_order": 2
     }
   ],
-  "semesters": [
-    {
-      "id": 70,
-      "year_id": 69,
-      "label": "UITEST-Sem",
-      "sort_order": 0,
-      "archived": false
-    }
-  ],
-  "classes": [
-    {
-      "id": 71,
-      "semester_id": 70,
-      "name": "UITEST-Class",
-      "professor": null,
-      "professor_email": null,
-      "office_hours": null,
-      "sort_order": 0
-    }
-  ],
+  "semesters": [],
+  "classes": [],
   "class_docs": [],
-  "sessions": [
-    {
-      "id": 73,
-      "class_id": 71,
-      "session_date": null,
-      "topic": "UITEST Session",
-      "sort_order": 0
-    }
-  ],
-  "entries": [
-    {
-      "id": 74,
-      "session_id": 73,
-      "type": "assignment",
-      "title": "UITEST Assignment",
-      "body_markdown": "",
-      "due_date": "2099-01-01",
-      "grade": 9,
-      "points_possible": 10,
-      "created_at": "2026-08-22 15:21:12",
-      "updated_at": "2026-08-22 15:21:13"
-    }
-  ],
+  "sessions": [],
+  "entries": [],
   "files": [],
-  "schedule_slots": [
-    {
-      "id": 72,
-      "class_id": 71,
-      "day_of_week": 2,
-      "start_time": "10:00",
-      "end_time": "10:50"
-    }
-  ]
+  "schedule_slots": []
 }
