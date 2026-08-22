@@ -88,9 +88,14 @@
       "id": 119,
       "semester_id": 118,
       "name": "UITEST2-Class",
-      "instructor_name": null,
-      "instructor_email": null,
-      "instructor_custom_fields": [],
+      "instructor_name": "Dr. Test",
+      "instructor_email": "test@example.com",
+      "instructor_custom_fields": [
+        {
+          "label": "Twitter",
+          "value": "@drtest"
+        }
+      ],
       "sort_order": 0
     }
   ],
