@@ -1,5 +1,5 @@
 {
-  "_nextId": 24,
+  "_nextId": 25,
   "years": [
     {
       "id": 9,
@@ -112,6 +112,16 @@
       "title": "Grace notes",
       "body_markdown": "See Rom. 8:28-30 and John 3:16 for the heart of it.",
       "due_date": null,
+      "created_at": "2026-08-22 13:49:27",
+      "updated_at": "2026-08-22 13:49:27"
+    },
+    {
+      "id": 24,
+      "session_id": 22,
+      "type": "assignment",
+      "title": "Essay",
+      "body_markdown": "Write about Rom 5:1",
+      "due_date": "2020-01-01",
       "created_at": "2026-08-22 13:49:27",
       "updated_at": "2026-08-22 13:49:27"
     }
