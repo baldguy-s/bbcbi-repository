@@ -1,5 +1,5 @@
 {
-  "_nextId": 104,
+  "_nextId": 105,
   "years": [
     {
       "id": 39,
@@ -17,6 +17,13 @@
       "id": 103,
       "year_id": 40,
       "label": "Spring",
+      "sort_order": 0,
+      "archived": false
+    },
+    {
+      "id": 104,
+      "year_id": 39,
+      "label": "Fall",
       "sort_order": 0,
       "archived": false
     }
