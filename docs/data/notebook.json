@@ -1,5 +1,5 @@
 {
-  "_nextId": 20,
+  "_nextId": 21,
   "years": [
     {
       "id": 12,
@@ -62,6 +62,16 @@
       "due_date": null,
       "created_at": "2026-08-22 14:06:06",
       "updated_at": "2026-08-22 14:06:06"
+    },
+    {
+      "id": 20,
+      "session_id": 18,
+      "type": "assignment",
+      "title": "Essay",
+      "body_markdown": "Write about Rom 5:1",
+      "due_date": "2020-01-01",
+      "created_at": "2026-08-22 14:06:07",
+      "updated_at": "2026-08-22 14:06:07"
     }
   ],
   "files": []
