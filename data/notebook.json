@@ -1,5 +1,5 @@
 {
-  "_nextId": 28,
+  "_nextId": 29,
   "years": [
     {
       "id": 9,
@@ -40,6 +40,13 @@
     {
       "id": 12,
       "semester_id": 11,
+      "name": "Romans",
+      "professor": "Dr. Smith",
+      "sort_order": 0
+    },
+    {
+      "id": 28,
+      "semester_id": 27,
       "name": "Romans",
       "professor": "Dr. Smith",
       "sort_order": 0
