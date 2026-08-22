@@ -2,11 +2,6 @@
   "_nextId": 11,
   "years": [
     {
-      "id": 9,
-      "label": "BROWSERTEST-Year",
-      "sort_order": 0
-    },
-    {
       "id": 10,
       "label": "DEBUGTEST-Year",
       "sort_order": 1
