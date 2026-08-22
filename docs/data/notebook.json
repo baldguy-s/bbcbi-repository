@@ -10,11 +10,6 @@
       "id": 40,
       "label": "2025 - 2026",
       "sort_order": 0
-    },
-    {
-      "id": 134,
-      "label": "UITEST3-Year",
-      "sort_order": 2
     }
   ],
   "semesters": [
@@ -37,13 +32,6 @@
       "year_id": 39,
       "label": "Spring",
       "sort_order": 1,
-      "archived": false
-    },
-    {
-      "id": 135,
-      "year_id": 134,
-      "label": "UITEST3-Sem",
-      "sort_order": 0,
       "archived": false
     }
   ],
@@ -83,15 +71,6 @@
       "instructor_name": "Dr Tom Lamkin",
       "instructor_email": null,
       "instructor_custom_fields": []
-    },
-    {
-      "id": 136,
-      "semester_id": 135,
-      "name": "UITEST3-Class",
-      "instructor_name": null,
-      "instructor_email": null,
-      "instructor_custom_fields": [],
-      "sort_order": 0
     }
   ],
   "class_docs": [
@@ -101,51 +80,11 @@
       "doc_type": "syllabus",
       "body_markdown": "",
       "updated_at": null
-    },
-    {
-      "id": 137,
-      "class_id": 136,
-      "doc_type": "syllabus",
-      "body_markdown": "UITEST3 syllabus body text",
-      "updated_at": "2026-08-22 16:50:01"
     }
   ],
-  "sessions": [
-    {
-      "id": 138,
-      "class_id": 136,
-      "session_date": "60822-02-02",
-      "topic": "UITEST3 Session Topic",
-      "sort_order": 0
-    }
-  ],
-  "entries": [
-    {
-      "id": 140,
-      "session_id": 138,
-      "type": "assignment",
-      "title": "UITEST3 Assignment",
-      "body_markdown": "",
-      "due_date": "2026-08-22",
-      "grade": null,
-      "points_possible": null,
-      "created_at": "2026-08-22 16:50:04",
-      "updated_at": "2026-08-22 16:50:04"
-    }
-  ],
+  "sessions": [],
+  "entries": [],
   "files": [
-    {
-      "id": 139,
-      "entry_id": null,
-      "class_doc_id": 137,
-      "session_id": null,
-      "inbox": 0,
-      "original_filename": "uitest3-file.txt",
-      "path": "uploads/classdoc-137/e8891ac3-73fe-4c33-ad41-2e02d38650ed.txt",
-      "mime_type": "text/plain",
-      "size_bytes": 28,
-      "uploaded_at": "2026-08-22 16:50:03"
-    },
     {
       "id": 141,
       "entry_id": null,
