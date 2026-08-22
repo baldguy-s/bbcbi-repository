@@ -1,6 +1,6 @@
 // Drop-in replacement for the old Express-backed api.js. Same public shape
 // (api.get/post/put/patch/del, same paths, same request/response shapes) so
-// notebook.js/session.js/inbox.js/upcoming.js/scripture.js/search.js/
+// notebook.js/session.js/inbox.js/thisweek.js/admin.js/scripture.js/search.js/
 // upload.js — all written against a real REST API originally — work
 // unmodified against an in-memory tree persisted to this GitHub repo
 // instead. See github.js for the actual GitHub REST calls.
@@ -34,8 +34,65 @@ export async function initStore() {
     // Backfill fields/tables added after the file was first created — the
     // live notebook.json predates schedule_slots and won't have it.
     if (!DB.schedule_slots) DB.schedule_slots = [];
+    // Both must always run (not `||`, which would short-circuit and skip the
+    // second migration once the first returns true) — each has independent
+    // side effects that need to happen regardless of the other's result.
+    const migratedFields = migrateProfessorToInstructor();
+    const migratedDocs = migrateScheduleDocIntoSyllabus();
+    if (migratedFields || migratedDocs) {
+      await save('Migrate to instructor fields / combined syllabus doc');
+    }
   })();
   return loadingPromise;
+}
+
+// One-time, idempotent migrations — safe to run on every load; each is a
+// no-op once the data's already in the new shape. Persisted immediately if
+// they actually changed anything, so this doesn't silently re-migrate in
+// memory forever without ever committing the cleanup.
+function migrateProfessorToInstructor() {
+  let changed = false;
+  for (const c of DB.classes) {
+    if ('professor' in c) {
+      c.instructor_name = c.professor;
+      delete c.professor;
+      changed = true;
+    }
+    if ('professor_email' in c) {
+      c.instructor_email = c.professor_email;
+      delete c.professor_email;
+      changed = true;
+    }
+    if ('office_hours' in c) {
+      delete c.office_hours;
+      changed = true;
+    }
+    if (!c.instructor_custom_fields) {
+      c.instructor_custom_fields = [];
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+function migrateScheduleDocIntoSyllabus() {
+  let changed = false;
+  for (const cls of DB.classes) {
+    const scheduleDoc = DB.class_docs.find((d) => d.class_id === cls.id && d.doc_type === 'schedule');
+    if (!scheduleDoc) continue;
+    if (scheduleDoc.body_markdown && scheduleDoc.body_markdown.trim()) {
+      let syllabusDoc = DB.class_docs.find((d) => d.class_id === cls.id && d.doc_type === 'syllabus');
+      if (!syllabusDoc) {
+        syllabusDoc = { id: nextId(), class_id: cls.id, doc_type: 'syllabus', body_markdown: '', updated_at: null };
+        DB.class_docs.push(syllabusDoc);
+      }
+      syllabusDoc.body_markdown = (syllabusDoc.body_markdown ? syllabusDoc.body_markdown + '\n\n' : '') + scheduleDoc.body_markdown;
+      syllabusDoc.updated_at = nowIso();
+    }
+    DB.class_docs = DB.class_docs.filter((d) => d.id !== scheduleDoc.id);
+    changed = true;
+  }
+  return changed;
 }
 
 async function save(message) {
@@ -241,8 +298,8 @@ on('POST', '/api/semesters/:semesterId/classes', async (p, body) => {
   if (!body?.name) { const e = new Error('name is required'); e.status = 400; throw e; }
   const semesterId = n(p.semesterId);
   const cls = {
-    id: nextId(), semester_id: semesterId, name: body.name, professor: body.professor || null,
-    professor_email: body.professor_email || null, office_hours: body.office_hours || null,
+    id: nextId(), semester_id: semesterId, name: body.name, instructor_name: body.instructor_name || null,
+    instructor_email: body.instructor_email || null, instructor_custom_fields: [],
     sort_order: nextSortOrder(DB.classes, 'semester_id', semesterId),
   };
   DB.classes.push(cls);
@@ -258,9 +315,13 @@ on('PATCH', '/api/classes/:id', async (p, body) => {
   const cls = DB.classes.find((c) => c.id === n(p.id));
   if (!cls) throw notFound();
   cls.name = body.name;
-  cls.professor = body.professor || null;
-  cls.professor_email = body.professor_email || null;
-  cls.office_hours = body.office_hours || null;
+  cls.instructor_name = body.instructor_name || null;
+  cls.instructor_email = body.instructor_email || null;
+  if (Array.isArray(body.instructor_custom_fields)) {
+    cls.instructor_custom_fields = body.instructor_custom_fields
+      .filter((f) => f && f.label && f.label.trim())
+      .map((f) => ({ label: f.label.trim(), value: (f.value || '').trim() }));
+  }
   await save(`Update class "${cls.name}"`);
   return cls;
 });
@@ -640,24 +701,16 @@ on('GET', '/api/classes/:id/grade-summary', (p) => {
 });
 
 on('GET', '/api/dashboard/this-week', () => {
+  // Assignments now come from /api/entries/upcoming (the This Week view
+  // shows that full list alongside this week's schedule, per the user
+  // folding the old separate Upcoming tab into This Week) — this route only
+  // needs to project the weekly class schedule onto real calendar dates.
   const today = new Date();
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
     d.setDate(d.getDate() + i);
     return { date: localIsoDate(d), dayOfWeek: d.getDay() };
   });
-  const weekEnd = days[days.length - 1].date;
-  const todayStr = days[0].date;
-
-  const assignments = DB.entries
-    .filter((e) => e.type === 'assignment' && e.due_date && e.due_date <= weekEnd)
-    .map((e) => {
-      const sb = sessionBreadcrumb(e.session_id) || {};
-      return { ...e, session_topic: sb.sessionTopic, class_id: sb.classId, class_name: sb.className, semester_archived: sb.semesterArchived };
-    })
-    .filter((r) => !r.semester_archived)
-    .map((r) => ({ ...r, overdue: r.due_date < todayStr }))
-    .sort((a, b) => a.due_date.localeCompare(b.due_date));
 
   const sessions = [];
   for (const day of days) {
@@ -673,7 +726,28 @@ on('GET', '/api/dashboard/this-week', () => {
   }
   sessions.sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
 
-  return { today: todayStr, weekEnd, assignments, sessions };
+  return { today: days[0].date, weekEnd: days[days.length - 1].date, sessions };
+});
+
+// Per-class assignments (for the combined Syllabus tab's "Assignments Due"
+// section) — same shape as /api/entries/upcoming but scoped to one class and
+// including assignments with no due date yet.
+on('GET', '/api/classes/:id/assignments', (p) => {
+  const classId = n(p.id);
+  const sessionIds = DB.sessions.filter((s) => s.class_id === classId).map((s) => s.id);
+  const today = localIsoDate(new Date());
+  return DB.entries
+    .filter((e) => e.type === 'assignment' && sessionIds.includes(e.session_id))
+    .map((e) => {
+      const sb = sessionBreadcrumb(e.session_id) || {};
+      return { ...e, session_topic: sb.sessionTopic, overdue: !!(e.due_date && e.due_date < today) };
+    })
+    .sort((a, b) => {
+      if (!a.due_date && !b.due_date) return 0;
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return a.due_date.localeCompare(b.due_date);
+    });
 });
 
 async function request(method, fullPath, body) {

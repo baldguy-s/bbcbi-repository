@@ -2,44 +2,33 @@ import { api } from './api.js';
 import { escapeHtml, formatDate, formatTime } from './util.js';
 import { navigate, currentRenderToken } from './app.js';
 
+// This Week is the first tab now, and absorbs what used to be the separate
+// Upcoming tab: it shows this week's scheduled class sessions AND the full
+// cross-class assignment list (not just assignments due within 7 days), so
+// there's one dashboard instead of two.
 export async function renderThisWeekView(container) {
   const myToken = currentRenderToken();
-  const data = await api.get('/api/dashboard/this-week');
+  const [week, assignments] = await Promise.all([
+    api.get('/api/dashboard/this-week'),
+    api.get('/api/entries/upcoming'),
+  ]);
   if (myToken !== currentRenderToken()) return;
 
   container.innerHTML = `
     <h2>This Week</h2>
-    <h3 style="font-size:1rem;">Due this week</h3>
-    <div id="week-assignments"></div>
-    <h3 style="font-size:1rem;margin-top:20px;">Class sessions this week</h3>
+    <h3 class="section-heading">This week's classes</h3>
     <div id="week-sessions"></div>
+    <h3 class="section-heading">Assignments</h3>
+    <div id="week-assignments"></div>
   `;
 
   const goToClass = (classId) => navigate(`#/notebook/class/${classId}/tab/sessions`);
 
-  const aEl = container.querySelector('#week-assignments');
-  if (data.assignments.length === 0) {
-    aEl.innerHTML = `<div class="empty-state">Nothing due this week.</div>`;
-  } else {
-    aEl.innerHTML = data.assignments
-      .map(
-        (a) => `
-        <div class="row-item" data-class="${a.class_id}" style="cursor:pointer;">
-          <span class="row-label">${escapeHtml(a.title || '(untitled)')} <span class="row-sub">${escapeHtml(a.class_name)}</span></span>
-          <span class="due-badge ${a.overdue ? 'overdue' : ''}">${escapeHtml(formatDate(a.due_date))}</span>
-        </div>`
-      )
-      .join('');
-    aEl.querySelectorAll('.row-item').forEach((row) => {
-      row.addEventListener('click', () => goToClass(row.getAttribute('data-class')));
-    });
-  }
-
   const sEl = container.querySelector('#week-sessions');
-  if (data.sessions.length === 0) {
+  if (week.sessions.length === 0) {
     sEl.innerHTML = `<div class="empty-state">No weekly class schedule set yet — add one per class in the Admin tab.</div>`;
   } else {
-    sEl.innerHTML = data.sessions
+    sEl.innerHTML = week.sessions
       .map(
         (s) => `
         <div class="row-item" data-class="${s.classId}" style="cursor:pointer;">
@@ -50,6 +39,26 @@ export async function renderThisWeekView(container) {
       )
       .join('');
     sEl.querySelectorAll('.row-item').forEach((row) => {
+      row.addEventListener('click', () => goToClass(row.getAttribute('data-class')));
+    });
+  }
+
+  const aEl = container.querySelector('#week-assignments');
+  if (assignments.length === 0) {
+    aEl.innerHTML = `<div class="empty-state">No assignments with due dates yet.</div>`;
+  } else {
+    aEl.innerHTML = assignments
+      .map(
+        (a) => `
+        <div class="row-item" data-class="${a.class_id}" style="cursor:pointer;">
+          <span class="row-label">${escapeHtml(a.title || '(untitled)')}
+            <span class="row-sub">${escapeHtml(a.class_name)} &middot; ${escapeHtml(a.session_topic || '')}</span>
+          </span>
+          <span class="due-badge ${a.overdue ? 'overdue' : ''}">${a.due_date ? `Due ${escapeHtml(formatDate(a.due_date))}` : ''}</span>
+        </div>`
+      )
+      .join('');
+    aEl.querySelectorAll('.row-item').forEach((row) => {
       row.addEventListener('click', () => goToClass(row.getAttribute('data-class')));
     });
   }

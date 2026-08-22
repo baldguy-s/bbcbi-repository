@@ -1,5 +1,5 @@
 import { api } from './api.js';
-import { escapeHtml, renderMarkdown, formatDate, todayIso } from './util.js';
+import { escapeHtml, renderMarkdown, formatDate, todayIso, flashSaved } from './util.js';
 import { attachUploadWidget, renderFileChips, attachFileDeleteHandler } from './upload.js';
 import { currentRenderToken } from './app.js';
 
@@ -18,45 +18,27 @@ export async function renderSessionsTab(container, classId) {
   const sessions = await api.get(`/api/classes/${classId}/sessions`);
   if (myToken !== currentRenderToken()) return;
 
+  // Sessions are created/dated/reordered from the class's Syllabus tab (its
+  // "Class Schedule" section) now, not here — this tab is purely for taking
+  // notes within already-scheduled dates. See notebook.js's renderSyllabusTab.
   container.innerHTML = `
-    <div class="control-row" id="entry-filter-chips" style="margin-bottom:10px;">
+    <div class="control-row" id="entry-filter-chips" style="margin-bottom:14px;">
       <span class="control-label">Filter</span>
-    </div>
-    <div class="control-row" style="margin-bottom:14px;">
-      <input type="date" class="field-input" id="new-session-date" style="max-width:160px;">
-      <input type="text" class="field-input" id="new-session-topic" placeholder="Session topic" style="max-width:260px;">
-      <button class="chip-btn" id="add-session-btn">+ Add Session</button>
     </div>
     <div id="sessions-list"></div>
   `;
+
+  if (sessions.length === 0) {
+    container.querySelector('#sessions-list').innerHTML =
+      `<div class="empty-state">No sessions yet — add class dates in the Syllabus tab.</div>`;
+  }
 
   renderFilterChips(container.querySelector('#entry-filter-chips'));
 
   const listEl = container.querySelector('#sessions-list');
 
-  async function reload() {
-    const fresh = await api.get(`/api/classes/${classId}/sessions`);
-    sessions.length = 0;
-    sessions.push(...fresh);
-    renderSessionCards(listEl, sessions);
-  }
-
-  attachSessionListHandlers(listEl, sessions, reload);
-  renderSessionCards(listEl, sessions);
-
-  container.querySelector('#add-session-btn').addEventListener('click', async () => {
-    const dateInput = container.querySelector('#new-session-date');
-    const topicInput = container.querySelector('#new-session-topic');
-    const created = await api.post(`/api/classes/${classId}/sessions`, {
-      session_date: dateInput.value || null,
-      topic: topicInput.value.trim(),
-    });
-    dateInput.value = '';
-    topicInput.value = '';
-    sessions.push(created);
-    expandedIds.add(String(created.id));
-    renderSessionCards(listEl, sessions);
-  });
+  attachSessionListHandlers(listEl);
+  if (sessions.length > 0) renderSessionCards(listEl, sessions);
 }
 
 function renderFilterChips(container) {
@@ -91,10 +73,6 @@ function renderSessionCards(container, sessions) {
           <span class="session-chevron">&#9660;</span>
           <span class="session-title">${escapeHtml(s.topic || '(untitled session)')}</span>
           <span class="session-date">${escapeHtml(formatDate(s.session_date))}</span>
-          <button class="icon-btn" data-action="up" ${idx === 0 ? 'disabled' : ''}>&#9650;</button>
-          <button class="icon-btn" data-action="down" ${idx === sessions.length - 1 ? 'disabled' : ''}>&#9660;</button>
-          <button class="icon-btn" data-action="edit">Edit</button>
-          <button class="icon-btn danger" data-action="delete">Delete</button>
         </div>
         <div class="session-card-body" data-body-for="${s.id}"></div>
       </div>`
@@ -112,56 +90,24 @@ function renderSessionCards(container, sessions) {
 // Attached exactly once per Sessions-tab render (not on every re-render of
 // the card list), via event delegation on the list container — otherwise a
 // fresh listener would stack up on every reload() and each click would fire
-// its handler once per accumulated listener.
-function attachSessionListHandlers(container, sessions, reload) {
-  container.addEventListener('click', async (ev) => {
+// once per accumulated listener. Session-level add/edit/delete/reorder now
+// live in the Syllabus tab (notebook.js), so this only handles expand/collapse.
+function attachSessionListHandlers(container) {
+  container.addEventListener('click', (ev) => {
     const header = ev.target.closest('.session-card-header');
-    // Scoped to the header specifically: session-level action buttons
-    // (up/down/edit/delete) only ever live in .session-card-header. Without
-    // this scoping, a click on a nested entry's own edit/delete button (data-
-    // action="edit"/"delete" too) bubbles up to this container listener and
-    // ev.target.closest('[data-action]') matches the SAME button, so the
-    // session-level handler would ALSO fire for it — e.g. clicking "Edit" on
-    // one note would additionally pop a prompt() to rename the whole session,
-    // and clicking "Delete" on one note would additionally ask to delete the
-    // entire session.
-    const actionBtn = ev.target.closest('.session-card-header [data-action]');
+    if (!header) return;
     const card = ev.target.closest('.session-card');
     if (!card) return;
     const id = card.getAttribute('data-id');
-    const session = sessions.find((s) => String(s.id) === id);
 
-    if (actionBtn) {
-      const action = actionBtn.getAttribute('data-action');
-      if (action === 'up' || action === 'down') {
-        await api.patch(`/api/sessions/${id}/reorder`, { direction: action });
-        await reload();
-      } else if (action === 'edit') {
-        const topic = prompt('Session topic:', session.topic || '');
-        if (topic === null) return;
-        const date = prompt('Session date (YYYY-MM-DD, optional):', session.session_date || '');
-        if (date === null) return;
-        await api.patch(`/api/sessions/${id}`, { topic: topic.trim(), session_date: date.trim() || null });
-        await reload();
-      } else if (action === 'delete') {
-        if (confirm('Delete this session and everything in it?')) {
-          await api.del(`/api/sessions/${id}`);
-          await reload();
-        }
-      }
-      return;
-    }
-
-    if (header) {
-      const wasExpanded = expandedIds.has(id);
-      if (wasExpanded) {
-        expandedIds.delete(id);
-        card.classList.remove('expanded');
-      } else {
-        expandedIds.add(id);
-        card.classList.add('expanded');
-        loadSessionBody(card.querySelector('.session-card-body'), id);
-      }
+    const wasExpanded = expandedIds.has(id);
+    if (wasExpanded) {
+      expandedIds.delete(id);
+      card.classList.remove('expanded');
+    } else {
+      expandedIds.add(id);
+      card.classList.add('expanded');
+      loadSessionBody(card.querySelector('.session-card-body'), id);
     }
   });
 }
@@ -175,6 +121,7 @@ async function loadSessionBody(bodyEl, sessionId) {
         ${ENTRY_TYPES.map((t) => `<option value="${t}">${ENTRY_TYPE_LABELS[t]}</option>`).join('')}
       </select>
       <input type="text" class="field-input" id="new-entry-title-${sessionId}" placeholder="Title" style="max-width:220px;">
+      <input type="date" class="field-input" id="new-entry-due-${sessionId}" style="max-width:160px;display:none;">
       <button class="chip-btn" id="add-entry-btn-${sessionId}">+ Add Entry</button>
     </div>
     <div class="field-label">Files attached to this session</div>
@@ -185,10 +132,21 @@ async function loadSessionBody(bodyEl, sessionId) {
     loadSessionBody(bodyEl, sessionId)
   );
 
+  const typeSelect = bodyEl.querySelector(`#new-entry-type-${sessionId}`);
+  const dueInput = bodyEl.querySelector(`#new-entry-due-${sessionId}`);
+  const toggleDueVisibility = () => {
+    dueInput.style.display = typeSelect.value === 'assignment' ? '' : 'none';
+  };
+  typeSelect.addEventListener('change', toggleDueVisibility);
+  toggleDueVisibility();
+
   bodyEl.querySelector(`#add-entry-btn-${sessionId}`).addEventListener('click', async () => {
-    const type = bodyEl.querySelector(`#new-entry-type-${sessionId}`).value;
+    const type = typeSelect.value;
     const title = bodyEl.querySelector(`#new-entry-title-${sessionId}`).value.trim();
-    await api.post(`/api/sessions/${sessionId}/entries`, { type, title, body_markdown: '' });
+    await api.post(`/api/sessions/${sessionId}/entries`, {
+      type, title, body_markdown: '',
+      due_date: type === 'assignment' ? dueInput.value || null : null,
+    });
     loadSessionBody(bodyEl, sessionId);
   });
 
@@ -316,6 +274,7 @@ function wireEntryCard(card, entry, sessionId, onChanged) {
       const dueInput = editEl.querySelector(`#edit-due-${entry.id}`);
       const gradeInput = editEl.querySelector(`#edit-grade-${entry.id}`);
       const pointsInput = editEl.querySelector(`#edit-points-${entry.id}`);
+      const saveBtn = editEl.querySelector(`#save-entry-${entry.id}`);
       const updated = await api.put(`/api/entries/${entry.id}`, {
         title: entry.title,
         body_markdown,
@@ -324,7 +283,10 @@ function wireEntryCard(card, entry, sessionId, onChanged) {
         points_possible: pointsInput ? pointsInput.value : entry.points_possible,
       });
       Object.assign(entry, updated);
-      renderView();
+      // Flash "Saved" before switching back to view mode — closing the
+      // editor immediately would hide the confirmation before it's seen.
+      flashSaved(saveBtn);
+      setTimeout(renderView, 700);
     });
     editEl.querySelector(`#cancel-entry-${entry.id}`).addEventListener('click', renderView);
   }

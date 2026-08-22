@@ -1,5 +1,5 @@
 import { api } from './api.js';
-import { escapeHtml, renderMarkdown, formatTime } from './util.js';
+import { escapeHtml, renderMarkdown, formatTime, formatDate, flashSaved } from './util.js';
 import { navigate, setLastUpdated, currentRenderToken } from './app.js';
 import { renderSessionsTab } from './session.js';
 import { attachUploadWidget, renderFileChips, attachFileDeleteHandler } from './upload.js';
@@ -118,7 +118,7 @@ async function renderClassesLevel(container, yearId, semesterId) {
     breadcrumb: `<a href="#/notebook">Notebook</a> &rsaquo; <a href="#/notebook/year/${yearId}">${escapeHtml(year ? year.label : '')}</a> &rsaquo; ${escapeHtml(semester ? semester.label : '')}`,
     items: classes,
     labelOf: (c) => c.name,
-    subOf: (c) => c.professor,
+    subOf: (c) => c.instructor_name,
     emptyHint: 'No classes yet — add one in the Admin tab.',
     onSelect: (item) => navigate(`#/notebook/year/${yearId}/semester/${semesterId}/class/${item.id}`),
   });
@@ -138,10 +138,12 @@ async function renderClassLevel(container, classId, tab) {
 
   const baseHash = `#/notebook/year/${yearId}/semester/${semesterId}/class/${classId}`;
 
-  const professorLines = [];
-  if (cls.professor) professorLines.push(escapeHtml(cls.professor));
-  if (cls.professor_email) professorLines.push(`<a href="mailto:${escapeHtml(cls.professor_email)}">${escapeHtml(cls.professor_email)}</a>`);
-  if (cls.office_hours) professorLines.push(`Office hours: ${escapeHtml(cls.office_hours)}`);
+  const contactLines = [];
+  if (cls.instructor_name) contactLines.push(escapeHtml(cls.instructor_name));
+  if (cls.instructor_email) contactLines.push(`<a href="mailto:${escapeHtml(cls.instructor_email)}">${escapeHtml(cls.instructor_email)}</a>`);
+  for (const f of cls.instructor_custom_fields || []) {
+    if (f.label) contactLines.push(`${escapeHtml(f.label)}: ${escapeHtml(f.value || '')}`);
+  }
 
   const scheduleLine = schedule.length
     ? schedule.map((s) => `${DAY_LABELS[s.day_of_week]} ${formatTime(s.start_time)}–${formatTime(s.end_time)}`).join(', ')
@@ -154,20 +156,33 @@ async function renderClassLevel(container, classId, tab) {
       <a href="#/notebook/year/${yearId}/semester/${semesterId}">${escapeHtml(semester ? semester.label : '')}</a>
     </div>
     <h2>${escapeHtml(cls.name)}</h2>
-    ${professorLines.length || scheduleLine || gradeSummary.gradedCount > 0 ? `
+    ${scheduleLine || gradeSummary.gradedCount > 0 || contactLines.length ? `
       <div class="class-info-card">
-        ${professorLines.length ? `<div>${professorLines.join(' &middot; ')}</div>` : ''}
         ${scheduleLine ? `<div>Meets: ${scheduleLine}</div>` : ''}
         ${gradeSummary.gradedCount > 0 ? `<div>Grade average: <strong>${gradeSummary.percent}%</strong> <span class="row-sub">(${gradeSummary.gradedCount}/${gradeSummary.assignmentCount} assignments graded)</span></div>` : ''}
+        ${contactLines.length ? `
+          <div class="collapsible-contact">
+            <div class="collapsible-contact-header" id="contact-toggle">
+              <span class="session-chevron">&#9660;</span> Instructor Info
+            </div>
+            <div class="collapsible-contact-body" id="contact-body">${contactLines.join('<br>')}</div>
+          </div>
+        ` : ''}
       </div>
     ` : ''}
     <div class="tabs">
       <button class="tab-btn ${tab === 'syllabus' ? 'active' : ''}" data-tab="syllabus">Syllabus</button>
-      <button class="tab-btn ${tab === 'schedule' ? 'active' : ''}" data-tab="schedule">Schedule</button>
       <button class="tab-btn ${tab === 'sessions' ? 'active' : ''}" data-tab="sessions">Sessions</button>
     </div>
     <div id="class-tab-content"></div>
   `;
+
+  const contactToggle = container.querySelector('#contact-toggle');
+  if (contactToggle) {
+    contactToggle.addEventListener('click', () => {
+      contactToggle.closest('.collapsible-contact').classList.toggle('expanded');
+    });
+  }
 
   container.querySelectorAll('.tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -177,22 +192,28 @@ async function renderClassLevel(container, classId, tab) {
 
   const tabContent = container.querySelector('#class-tab-content');
 
-  if (tab === 'syllabus' || tab === 'schedule') {
-    await renderClassDoc(tabContent, classId, tab);
-  } else {
+  if (tab === 'sessions') {
     await renderSessionsTab(tabContent, classId);
+  } else {
+    await renderSyllabusTab(tabContent, classId);
   }
 }
 
-async function renderClassDoc(container, classId, docType) {
+// Combined Syllabus tab: course content (markdown), the class's calendar of
+// meeting dates (which ARE the Sessions shown in the Sessions tab — this is
+// where they're created/dated/reordered now), and a read-only summary of
+// this class's assignments and due dates.
+async function renderSyllabusTab(container, classId) {
   const myToken = currentRenderToken();
-  const doc = await api.get(`/api/classes/${classId}/docs/${docType}`);
+  const doc = await api.get(`/api/classes/${classId}/docs/syllabus`);
+  const sessions = await api.get(`/api/classes/${classId}/sessions`);
+  const assignments = await api.get(`/api/classes/${classId}/assignments`);
   if (myToken !== currentRenderToken()) return;
   setLastUpdated(doc.updated_at);
 
   container.innerHTML = `
     <div class="md-editor">
-      <textarea id="doc-editor" placeholder="Type ${escapeHtml(docType)} notes in markdown...">${escapeHtml(doc.body_markdown || '')}</textarea>
+      <textarea id="doc-editor" placeholder="Course description, policies, notes...">${escapeHtml(doc.body_markdown || '')}</textarea>
     </div>
     <div class="control-row" style="margin:8px 0;">
       <button class="chip-btn" id="doc-save-btn">Save</button>
@@ -200,6 +221,18 @@ async function renderClassDoc(container, classId, docType) {
     </div>
     <div class="md-preview" id="doc-preview" style="display:none;"></div>
     <div id="doc-files"></div>
+
+    <h3 class="section-heading">Class Schedule</h3>
+    <p class="row-sub">Dates you add here show up as Sessions, ready for notes.</p>
+    <div id="schedule-list"></div>
+    <div class="control-row" style="margin:10px 0;">
+      <input type="date" class="field-input" id="new-date-input" style="max-width:160px;">
+      <input type="text" class="field-input" id="new-date-topic" placeholder="Topic" style="max-width:240px;">
+      <button class="chip-btn" id="add-date-btn">+ Add Date</button>
+    </div>
+
+    <h3 class="section-heading">Assignments Due</h3>
+    <div id="assignments-list"></div>
   `;
 
   const textarea = container.querySelector('#doc-editor');
@@ -214,8 +247,10 @@ async function renderClassDoc(container, classId, docType) {
   });
 
   container.querySelector('#doc-save-btn').addEventListener('click', async () => {
-    const saved = await api.put(`/api/classes/${classId}/docs/${docType}`, { body_markdown: textarea.value });
+    const saveBtn = container.querySelector('#doc-save-btn');
+    const saved = await api.put(`/api/classes/${classId}/docs/syllabus`, { body_markdown: textarea.value });
     setLastUpdated(saved.updated_at);
+    flashSaved(saveBtn);
   });
 
   const filesEl = container.querySelector('#doc-files');
@@ -230,4 +265,90 @@ async function renderClassDoc(container, classId, docType) {
   attachFileDeleteHandler(filesEl, (fileId) => {
     container.querySelector(`.file-chip[data-file-id="${fileId}"]`)?.remove();
   });
+
+  // ===== Class Schedule (dates -> Sessions) =====
+  const scheduleListEl = container.querySelector('#schedule-list');
+
+  function renderScheduleList() {
+    if (sessions.length === 0) {
+      scheduleListEl.innerHTML = `<div class="empty-state">No dates yet — add the first one below.</div>`;
+      return;
+    }
+    scheduleListEl.innerHTML = sessions
+      .map(
+        (s, idx) => `
+        <div class="row-item" data-id="${s.id}">
+          <span class="row-label">${escapeHtml(formatDate(s.session_date)) || '(no date)'} <span class="row-sub">${escapeHtml(s.topic || '')}</span></span>
+          <button class="icon-btn" data-action="up" ${idx === 0 ? 'disabled' : ''}>&#9650;</button>
+          <button class="icon-btn" data-action="down" ${idx === sessions.length - 1 ? 'disabled' : ''}>&#9660;</button>
+          <button class="icon-btn" data-action="edit">Edit</button>
+          <button class="icon-btn danger" data-action="delete">Delete</button>
+        </div>`
+      )
+      .join('');
+  }
+  renderScheduleList();
+
+  scheduleListEl.addEventListener('click', async (ev) => {
+    const btn = ev.target.closest('[data-action]');
+    if (!btn) return;
+    const row = btn.closest('.row-item');
+    const id = row.getAttribute('data-id');
+    const action = btn.getAttribute('data-action');
+    const session = sessions.find((s) => String(s.id) === id);
+
+    if (action === 'up' || action === 'down') {
+      await api.patch(`/api/sessions/${id}/reorder`, { direction: action });
+      const fresh = await api.get(`/api/classes/${classId}/sessions`);
+      sessions.length = 0;
+      sessions.push(...fresh);
+      renderScheduleList();
+    } else if (action === 'edit') {
+      const topic = prompt('Topic:', session.topic || '');
+      if (topic === null) return;
+      const date = prompt('Date (YYYY-MM-DD):', session.session_date || '');
+      if (date === null) return;
+      const updated = await api.patch(`/api/sessions/${id}`, { topic: topic.trim(), session_date: date.trim() || null });
+      Object.assign(session, updated);
+      renderScheduleList();
+    } else if (action === 'delete') {
+      if (confirm('Delete this date and everything in it (notes, assignments, files)?')) {
+        await api.del(`/api/sessions/${id}`);
+        sessions.splice(sessions.findIndex((s) => s.id === session.id), 1);
+        renderScheduleList();
+      }
+    }
+  });
+
+  container.querySelector('#add-date-btn').addEventListener('click', async () => {
+    const dateInput = container.querySelector('#new-date-input');
+    const topicInput = container.querySelector('#new-date-topic');
+    if (!dateInput.value) return;
+    const created = await api.post(`/api/classes/${classId}/sessions`, {
+      session_date: dateInput.value, topic: topicInput.value.trim(),
+    });
+    sessions.push(created);
+    dateInput.value = '';
+    topicInput.value = '';
+    renderScheduleList();
+  });
+
+  // ===== Assignments Due (read-only summary) =====
+  const assignmentsEl = container.querySelector('#assignments-list');
+  if (assignments.length === 0) {
+    assignmentsEl.innerHTML = `<div class="empty-state">No assignments yet.</div>`;
+  } else {
+    assignmentsEl.innerHTML = assignments
+      .map(
+        (a) => `
+        <div class="row-item" style="cursor:pointer;">
+          <span class="row-label">${escapeHtml(a.title || '(untitled)')} <span class="row-sub">${escapeHtml(a.session_topic || '')}</span></span>
+          <span class="due-badge ${a.overdue ? 'overdue' : ''}">${a.due_date ? escapeHtml(formatDate(a.due_date)) : 'No due date'}</span>
+        </div>`
+      )
+      .join('');
+    assignmentsEl.querySelectorAll('.row-item').forEach((row) => {
+      row.addEventListener('click', () => navigate(`#/notebook/class/${classId}/tab/sessions`));
+    });
+  }
 }

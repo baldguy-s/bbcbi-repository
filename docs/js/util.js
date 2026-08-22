@@ -33,6 +33,22 @@ export function formatDate(isoDateStr) {
   return `${m}/${d}/${String(y).slice(-2)}`;
 }
 
+// Flashes a small "Saved" confirmation next to a Save button. Reuses one
+// indicator element per button (rather than creating a new one on every
+// save) so rapid saves just restart the fade instead of stacking elements.
+export function flashSaved(button) {
+  let indicator = button.nextElementSibling;
+  if (!indicator || !indicator.classList.contains('save-indicator')) {
+    indicator = document.createElement('span');
+    indicator.className = 'save-indicator';
+    button.insertAdjacentElement('afterend', indicator);
+  }
+  indicator.textContent = 'Saved ✓';
+  indicator.classList.add('visible');
+  clearTimeout(indicator._fadeTimeout);
+  indicator._fadeTimeout = setTimeout(() => indicator.classList.remove('visible'), 2000);
+}
+
 export function formatTime(hhmm) {
   const [h, m] = hhmm.split(':').map(Number);
   const period = h >= 12 ? 'PM' : 'AM';

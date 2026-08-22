@@ -1,5 +1,5 @@
 import { api } from './api.js';
-import { escapeHtml, formatDate } from './util.js';
+import { escapeHtml, formatDate, flashSaved } from './util.js';
 import { navigate, currentRenderToken } from './app.js';
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -213,7 +213,7 @@ async function renderClassesAdmin(container, yearId, semesterId) {
           <div class="session-card-header">
             <span class="session-chevron">&#9660;</span>
             <span class="session-title">${escapeHtml(c.name)}</span>
-            <span class="session-date">${escapeHtml(c.professor || '')}</span>
+            <span class="session-date">${escapeHtml(c.instructor_name || '')}</span>
             <button class="icon-btn" data-action="up" ${idx === 0 ? 'disabled' : ''}>&#9650;</button>
             <button class="icon-btn" data-action="down" ${idx === classes.length - 1 ? 'disabled' : ''}>&#9660;</button>
             <button class="icon-btn danger" data-action="delete">Delete</button>
@@ -273,16 +273,22 @@ async function renderClassesAdmin(container, yearId, semesterId) {
 
 async function loadClassEditor(bodyEl, cls) {
   const schedule = await api.get(`/api/classes/${cls.id}/schedule`);
+  const customFields = (cls.instructor_custom_fields || []).map((f) => ({ ...f }));
 
   bodyEl.innerHTML = `
     <label class="field-label">Class name</label>
     <input type="text" class="field-input" id="cls-name-${cls.id}" value="${escapeHtml(cls.name)}">
-    <label class="field-label">Professor</label>
-    <input type="text" class="field-input" id="cls-prof-${cls.id}" value="${escapeHtml(cls.professor || '')}">
-    <label class="field-label">Professor email</label>
-    <input type="email" class="field-input" id="cls-email-${cls.id}" value="${escapeHtml(cls.professor_email || '')}">
-    <label class="field-label">Office hours</label>
-    <input type="text" class="field-input" id="cls-hours-${cls.id}" value="${escapeHtml(cls.office_hours || '')}" placeholder="e.g. Tue/Thu 2-4pm">
+    <label class="field-label">Instructor</label>
+    <input type="text" class="field-input" id="cls-prof-${cls.id}" value="${escapeHtml(cls.instructor_name || '')}">
+    <label class="field-label">Instructor email</label>
+    <input type="email" class="field-input" id="cls-email-${cls.id}" value="${escapeHtml(cls.instructor_email || '')}">
+
+    <div class="field-label">Additional instructor info</div>
+    <div id="cls-custom-${cls.id}"></div>
+    <div class="control-row" style="margin:6px 0;">
+      <button class="chip-btn" id="cls-custom-add-${cls.id}">+ Add Field</button>
+    </div>
+
     <div class="control-row" style="margin:8px 0;">
       <button class="chip-btn" id="cls-save-${cls.id}">Save</button>
     </div>
@@ -299,18 +305,56 @@ async function loadClassEditor(bodyEl, cls) {
     </div>
   `;
 
+  function renderCustomFields() {
+    const wrap = bodyEl.querySelector(`#cls-custom-${cls.id}`);
+    if (customFields.length === 0) {
+      wrap.innerHTML = `<div class="empty-state">None — e.g. office hours, phone, Twitter.</div>`;
+      return;
+    }
+    wrap.innerHTML = customFields
+      .map(
+        (f, i) => `
+        <div class="control-row" style="margin-bottom:6px;" data-custom-row="${i}">
+          <input type="text" class="field-input" data-custom-label="${i}" placeholder="Field name (e.g. Office hours)" value="${escapeHtml(f.label)}" style="max-width:180px;">
+          <input type="text" class="field-input" data-custom-value="${i}" placeholder="Value" value="${escapeHtml(f.value)}" style="max-width:180px;">
+          <button type="button" class="icon-btn danger" data-custom-remove="${i}">Remove</button>
+        </div>`
+      )
+      .join('');
+    wrap.querySelectorAll('[data-custom-label]').forEach((input) => {
+      input.addEventListener('input', () => { customFields[Number(input.dataset.customLabel)].label = input.value; });
+    });
+    wrap.querySelectorAll('[data-custom-value]').forEach((input) => {
+      input.addEventListener('input', () => { customFields[Number(input.dataset.customValue)].value = input.value; });
+    });
+    wrap.querySelectorAll('[data-custom-remove]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        customFields.splice(Number(btn.dataset.customRemove), 1);
+        renderCustomFields();
+      });
+    });
+  }
+  renderCustomFields();
+
+  bodyEl.querySelector(`#cls-custom-add-${cls.id}`).addEventListener('click', () => {
+    customFields.push({ label: '', value: '' });
+    renderCustomFields();
+  });
+
   bodyEl.querySelector(`#cls-save-${cls.id}`).addEventListener('click', async () => {
+    const saveBtn = bodyEl.querySelector(`#cls-save-${cls.id}`);
     const updated = await api.patch(`/api/classes/${cls.id}`, {
       name: bodyEl.querySelector(`#cls-name-${cls.id}`).value.trim(),
-      professor: bodyEl.querySelector(`#cls-prof-${cls.id}`).value.trim(),
-      professor_email: bodyEl.querySelector(`#cls-email-${cls.id}`).value.trim(),
-      office_hours: bodyEl.querySelector(`#cls-hours-${cls.id}`).value.trim(),
+      instructor_name: bodyEl.querySelector(`#cls-prof-${cls.id}`).value.trim(),
+      instructor_email: bodyEl.querySelector(`#cls-email-${cls.id}`).value.trim(),
+      instructor_custom_fields: customFields,
     });
     Object.assign(cls, updated);
+    flashSaved(saveBtn);
     const header = bodyEl.closest('.session-card').querySelector('.session-title');
     if (header) header.textContent = cls.name;
     const sub = bodyEl.closest('.session-card').querySelector('.session-date');
-    if (sub) sub.textContent = cls.professor || '';
+    if (sub) sub.textContent = cls.instructor_name || '';
   });
 
   function renderSchedule() {

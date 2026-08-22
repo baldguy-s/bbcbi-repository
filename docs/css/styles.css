@@ -87,6 +87,26 @@ header.site {
   padding: 20px 18px 18px;
   text-align: center;
   border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+/* Deliberately NOT a chip-btn: Admin is a separate, quieter concern from the
+   main Notebook/This Week/Inbox/Scripture navigation, so it lives in the
+   banner corner as a plain text link rather than another pill button. */
+.admin-link {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-family: var(--font-body);
+  font-size: .74rem;
+  font-weight: 600;
+  color: var(--banner-fg);
+  text-decoration: underline;
+  text-decoration-color: rgba(0, 0, 0, 0.35);
+  opacity: .8;
+}
+.admin-link:hover {
+  opacity: 1;
 }
 
 header.site img.logo-img {
@@ -189,7 +209,20 @@ main {
   text-align: center;
 }
 
-/* ===== Class info card (professor / schedule / grade summary) ===== */
+/* ===== Save indicator ===== */
+.save-indicator {
+  color: var(--ok);
+  font-size: .8rem;
+  font-weight: 600;
+  margin-left: 8px;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+.save-indicator.visible {
+  opacity: 1;
+}
+
+/* ===== Class info card (instructor / schedule / grade summary) ===== */
 .class-info-card {
   background: var(--offwhite);
   border: 1px solid var(--line);
@@ -198,6 +231,43 @@ main {
   margin-bottom: 12px;
   font-size: .88rem;
   line-height: 1.6;
+}
+
+.collapsible-contact {
+  margin-top: 6px;
+}
+
+.collapsible-contact-header {
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  color: var(--slate);
+  font-size: .82rem;
+}
+
+.collapsible-contact-header .session-chevron {
+  font-size: .65rem;
+}
+
+.collapsible-contact.expanded .collapsible-contact-header .session-chevron {
+  transform: rotate(180deg);
+}
+
+.collapsible-contact-body {
+  display: none;
+  margin-top: 4px;
+  padding-left: 4px;
+}
+
+.collapsible-contact.expanded .collapsible-contact-body {
+  display: block;
+}
+
+.section-heading {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 22px 0 4px;
 }
 
 /* ===== Tabs ===== */

@@ -2,7 +2,6 @@ import { api, initStore } from './api.js';
 import * as gh from './github.js';
 import { renderNotebookView } from './notebook.js';
 import { renderInboxView } from './inbox.js';
-import { renderUpcomingView } from './upcoming.js';
 import { renderScriptureView } from './scripture.js';
 import { renderSearchResults } from './search.js';
 import { renderAdminView } from './admin.js';
@@ -21,11 +20,11 @@ export const state = {
 
 export function navigate(hash) {
   // Setting location.hash to its current value is a no-op in browsers (no
-  // hashchange fires), but '' and '#/notebook' both render the same default
-  // view as different strings — without this check, clicking "Notebook" while
-  // already there triggers a genuine, redundant re-fetch+re-render that can
-  // race with (and clobber) whatever the user is doing on the current page.
-  if (window.location.hash === hash || (window.location.hash === '' && hash === '#/notebook')) return;
+  // hashchange fires), but '' and '#/thisweek' both render the same default
+  // (first-tab) view as different strings — without this check, clicking
+  // "This Week" while already there triggers a genuine, redundant re-fetch+
+  // re-render that can race with (and clobber) whatever the user is doing.
+  if (window.location.hash === hash || (window.location.hash === '' && hash === '#/thisweek')) return;
   window.location.hash = hash;
 }
 
@@ -81,10 +80,11 @@ async function route() {
   const segments = parseHash();
 
   try {
-    if (segments[0] === 'inbox') {
+    if (segments.length === 0) {
+      // This Week is the first/default tab now.
+      await renderThisWeekView(mainEl);
+    } else if (segments[0] === 'inbox') {
       await renderInboxView(mainEl, segments);
-    } else if (segments[0] === 'upcoming') {
-      await renderUpcomingView(mainEl);
     } else if (segments[0] === 'thisweek') {
       await renderThisWeekView(mainEl);
     } else if (segments[0] === 'admin') {
@@ -125,11 +125,11 @@ document.getElementById('search-input').addEventListener('input', (e) => {
   }, 250);
 });
 
-document.getElementById('nav-notebook').addEventListener('click', () => navigate('#/notebook'));
+// nav-admin is a plain <a href="#/admin"> now (see index.html) — it
+// navigates natively, no click handler needed.
 document.getElementById('nav-thisweek').addEventListener('click', () => navigate('#/thisweek'));
-document.getElementById('nav-admin').addEventListener('click', () => navigate('#/admin'));
+document.getElementById('nav-notebook').addEventListener('click', () => navigate('#/notebook'));
 document.getElementById('nav-inbox').addEventListener('click', () => navigate('#/inbox'));
-document.getElementById('nav-upcoming').addEventListener('click', () => navigate('#/upcoming'));
 document.getElementById('nav-scripture').addEventListener('click', () => navigate('#/scripture'));
 
 window.addEventListener('hashchange', route);
