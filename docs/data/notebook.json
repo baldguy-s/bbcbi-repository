@@ -1,5 +1,5 @@
 {
-  "_nextId": 26,
+  "_nextId": 27,
   "years": [
     {
       "id": 12,
@@ -43,7 +43,15 @@
       "updated_at": "2026-08-22 14:06:24"
     }
   ],
-  "sessions": [],
+  "sessions": [
+    {
+      "id": 26,
+      "class_id": 24,
+      "session_date": "2025-09-01",
+      "topic": "Intro to Romans",
+      "sort_order": 0
+    }
+  ],
   "entries": [],
   "files": []
 }
