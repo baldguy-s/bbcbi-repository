@@ -1,5 +1,5 @@
 {
-  "_nextId": 70,
+  "_nextId": 71,
   "years": [
     {
       "id": 39,
@@ -17,7 +17,15 @@
       "sort_order": 2
     }
   ],
-  "semesters": [],
+  "semesters": [
+    {
+      "id": 70,
+      "year_id": 69,
+      "label": "UITEST-Sem",
+      "sort_order": 0,
+      "archived": false
+    }
+  ],
   "classes": [],
   "class_docs": [],
   "sessions": [],
