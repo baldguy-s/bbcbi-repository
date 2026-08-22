@@ -96,8 +96,8 @@
       "instructor_name": null,
       "instructor_email": null,
       "instructor_custom_fields": [],
-      "start_date": null,
-      "end_date": null,
+      "start_date": "2026-01-15",
+      "end_date": "2026-05-01",
       "sort_order": 0
     }
   ],
