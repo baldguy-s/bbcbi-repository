@@ -10,77 +10,13 @@
       "id": 40,
       "label": "2025 - 2026",
       "sort_order": 0
-    },
-    {
-      "id": 49,
-      "label": "FEATTEST-Year",
-      "sort_order": 2
     }
   ],
-  "semesters": [
-    {
-      "id": 50,
-      "year_id": 49,
-      "label": "FEATTEST-Sem",
-      "sort_order": 0,
-      "archived": false
-    }
-  ],
-  "classes": [
-    {
-      "id": 51,
-      "semester_id": 50,
-      "name": "FEATTEST-Class",
-      "professor": "Dr. Jones",
-      "professor_email": "jones@example.com",
-      "office_hours": "Tue 2-4pm",
-      "sort_order": 0
-    }
-  ],
+  "semesters": [],
+  "classes": [],
   "class_docs": [],
-  "sessions": [
-    {
-      "id": 54,
-      "class_id": 51,
-      "session_date": null,
-      "topic": "FEATTEST session",
-      "sort_order": 0
-    }
-  ],
-  "entries": [
-    {
-      "id": 55,
-      "session_id": 54,
-      "type": "assignment",
-      "title": "Essay 1",
-      "body_markdown": "x",
-      "due_date": "2026-08-25",
-      "grade": 45,
-      "points_possible": 50,
-      "created_at": "2026-08-22 15:10:04",
-      "updated_at": "2026-08-22 15:10:04"
-    },
-    {
-      "id": 56,
-      "session_id": 54,
-      "type": "assignment",
-      "title": "Essay 2 (no due date yet)",
-      "body_markdown": "x",
-      "due_date": "2026-08-22",
-      "grade": 18,
-      "points_possible": 20,
-      "created_at": "2026-08-22 15:10:05",
-      "updated_at": "2026-08-22 15:10:15"
-    }
-  ],
+  "sessions": [],
+  "entries": [],
   "files": [],
-  "schedule_slots": [
-    {
-      "id": 52,
-      "class_id": 51,
-      "day_of_week": 1,
-      "start_time": "09:00",
-      "end_time": "09:50"
-    }
-  ]
+  "schedule_slots": []
 }
