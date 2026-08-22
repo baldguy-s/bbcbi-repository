@@ -55,12 +55,15 @@ export async function renderNotebookView(container, segments) {
   if (parts[0] === 'year' && parts[2] === 'semester' && parts.length === 4) {
     return renderClassesLevel(container, parts[1], parts[3]);
   }
+  // Syllabus is the default tab — it's the richer combined view now (course
+  // content + class schedule + assignments due), Sessions is for note-taking
+  // once dates exist.
   if (parts[0] === 'year' && parts[2] === 'semester' && parts[4] === 'class') {
-    const tab = parts[6] === 'tab' ? parts[7] : 'sessions';
+    const tab = parts[6] === 'tab' ? parts[7] : 'syllabus';
     return renderClassLevel(container, parts[5], tab);
   }
   if (parts[0] === 'class') {
-    const tab = parts[2] === 'tab' ? parts[3] : 'sessions';
+    const tab = parts[2] === 'tab' ? parts[3] : 'syllabus';
     return renderClassLevel(container, parts[1], tab);
   }
   return renderYearsLevel(container);
