@@ -84,20 +84,7 @@
   ],
   "sessions": [],
   "entries": [],
-  "files": [
-    {
-      "id": 141,
-      "entry_id": null,
-      "class_doc_id": null,
-      "session_id": null,
-      "inbox": 1,
-      "original_filename": "Quick note 2026-08-22 16:50.txt",
-      "path": "uploads/inbox/1df8b732-8633-4b04-a9a0-20a6b9c843b5.txt",
-      "mime_type": "text/plain",
-      "size_bytes": 23,
-      "uploaded_at": "2026-08-22 16:50:09"
-    }
-  ],
+  "files": [],
   "schedule_slots": [
     {
       "id": 107,
