@@ -603,8 +603,23 @@ on('GET', '/api/search', (p, body, query) => {
     });
 
   const files = DB.files
-    .filter((f) => has(f.original_filename))
-    .map((f) => ({ resultType: 'file', fileId: f.id, original_filename: f.original_filename, entryId: f.entry_id, classDocId: f.class_doc_id, sessionId: f.session_id }));
+    .filter((f) => f.inbox !== 1 && has(f.original_filename))
+    .map((f) => {
+      let classId = null, sessionId = null, contextLabel = '';
+      if (f.entry_id) {
+        const e = DB.entries.find((en) => en.id === f.entry_id);
+        const sb = e ? sessionBreadcrumb(e.session_id) : null;
+        if (sb) { classId = sb.classId; sessionId = sb.sessionId; contextLabel = `${sb.className} — ${e.title || sb.sessionTopic || ''}`; }
+      } else if (f.class_doc_id) {
+        const d = DB.class_docs.find((cd) => cd.id === f.class_doc_id);
+        const cb = d ? classBreadcrumb(d.class_id) : null;
+        if (cb) { classId = cb.classId; contextLabel = cb.className; }
+      } else if (f.session_id) {
+        const sb = sessionBreadcrumb(f.session_id);
+        if (sb) { classId = sb.classId; sessionId = sb.sessionId; contextLabel = `${sb.className} — ${sb.sessionTopic || ''}`; }
+      }
+      return { resultType: 'file', fileId: f.id, original_filename: f.original_filename, path: f.path, classId, sessionId, contextLabel };
+    });
 
   return { entries, docs, files };
 });

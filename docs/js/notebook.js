@@ -60,11 +60,13 @@ export async function renderNotebookView(container, segments) {
   // once dates exist.
   if (parts[0] === 'year' && parts[2] === 'semester' && parts[4] === 'class') {
     const tab = parts[6] === 'tab' ? parts[7] : 'syllabus';
-    return renderClassLevel(container, parts[5], tab);
+    const focusSessionId = parts[8] === 'session' ? parts[9] : null;
+    return renderClassLevel(container, parts[5], tab, focusSessionId);
   }
   if (parts[0] === 'class') {
     const tab = parts[2] === 'tab' ? parts[3] : 'syllabus';
-    return renderClassLevel(container, parts[1], tab);
+    const focusSessionId = parts[4] === 'session' ? parts[5] : null;
+    return renderClassLevel(container, parts[1], tab, focusSessionId);
   }
   return renderYearsLevel(container);
 }
@@ -127,7 +129,7 @@ async function renderClassesLevel(container, yearId, semesterId) {
   });
 }
 
-async function renderClassLevel(container, classId, tab) {
+async function renderClassLevel(container, classId, tab, focusSessionId) {
   const myToken = currentRenderToken();
   const cls = await api.get(`/api/classes/${classId}`);
   const semester = await api.get(`/api/semesters/${cls.semester_id}`);
@@ -176,9 +178,14 @@ async function renderClassLevel(container, classId, tab) {
     <div class="tabs">
       <button class="tab-btn ${tab === 'syllabus' ? 'active' : ''}" data-tab="syllabus">Syllabus</button>
       <button class="tab-btn ${tab === 'sessions' ? 'active' : ''}" data-tab="sessions">Sessions</button>
+      <button class="print-btn" id="print-class-btn" style="margin-left:auto;align-self:center;">Print / Export</button>
     </div>
     <div id="class-tab-content"></div>
   `;
+
+  container.querySelector('#print-class-btn').addEventListener('click', () => {
+    printClassNotes(cls, contactLines, scheduleLine);
+  });
 
   const contactToggle = container.querySelector('#contact-toggle');
   if (contactToggle) {
@@ -196,10 +203,72 @@ async function renderClassLevel(container, classId, tab) {
   const tabContent = container.querySelector('#class-tab-content');
 
   if (tab === 'sessions') {
-    await renderSessionsTab(tabContent, classId);
+    await renderSessionsTab(tabContent, classId, focusSessionId);
   } else {
     await renderSyllabusTab(tabContent, classId);
   }
+}
+
+// Assembles the syllabus + every dated session's notes/assignments into one
+// printable page, opened in a new tab/window so the sticky bar, nav, and
+// quick-capture button (all irrelevant on paper) never end up in the print
+// output. Uses the app's own tokens so it still looks like this app, not a
+// generic browser printout.
+async function printClassNotes(cls, contactLines, scheduleLine) {
+  const [doc, sessions] = await Promise.all([
+    api.get(`/api/classes/${cls.id}/docs/syllabus`),
+    api.get(`/api/classes/${cls.id}/sessions`),
+  ]);
+  const sessionDetails = await Promise.all(sessions.map((s) => api.get(`/api/sessions/${s.id}`)));
+
+  const win = window.open('', '_blank');
+  if (!win) {
+    alert('Your browser blocked the print window — allow pop-ups for this site and try again.');
+    return;
+  }
+
+  const entryHtml = (e) => `
+    <div class="p-entry">
+      <div class="p-entry-head">
+        <strong>${escapeHtml(e.title || '(untitled)')}</strong>
+        <span class="p-tag">${escapeHtml(e.type)}</span>
+        ${e.type === 'assignment' && e.due_date ? `<span class="p-tag">Due ${escapeHtml(formatDate(e.due_date))}</span>` : ''}
+        ${e.type === 'assignment' && e.grade != null && e.points_possible ? `<span class="p-tag">${e.grade}/${e.points_possible}</span>` : ''}
+      </div>
+      <div class="p-body">${renderMarkdown(e.body_markdown || '')}</div>
+    </div>`;
+
+  const sessionHtml = (detail) => `
+    <div class="p-session">
+      <h3>${escapeHtml(formatDate(detail.session_date)) || '(no date)'}${detail.topic ? ` — ${escapeHtml(detail.topic)}` : ''}</h3>
+      ${detail.entries.length ? detail.entries.map(entryHtml).join('') : '<p class="p-empty">No notes for this date.</p>'}
+    </div>`;
+
+  win.document.write(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>${escapeHtml(cls.name)} — Notes</title>
+<style>
+  body { font-family: Georgia, serif; color: #1A1A1A; max-width: 760px; margin: 30px auto; padding: 0 20px; }
+  h1 { font-size: 1.6rem; margin-bottom: 2px; }
+  h2 { font-size: 1.1rem; color: #6B6B6B; font-weight: normal; margin-top: 0; }
+  h3 { font-size: 1.05rem; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 28px; }
+  .p-meta { font-size: .9rem; color: #444; margin-bottom: 18px; }
+  .p-doc { margin-bottom: 24px; }
+  .p-entry { margin: 12px 0 12px 8px; padding-left: 10px; border-left: 3px solid #ddd; }
+  .p-entry-head { font-size: .95rem; margin-bottom: 4px; }
+  .p-tag { font-size: .72rem; text-transform: uppercase; color: #666; border: 1px solid #ccc; border-radius: 8px; padding: 1px 7px; margin-left: 6px; }
+  .p-body { font-size: .92rem; }
+  .p-empty { color: #888; font-size: .88rem; font-style: italic; }
+  @media print { a { color: inherit; text-decoration: none; } }
+</style>
+</head><body>
+  <h1>${escapeHtml(cls.name)}</h1>
+  ${contactLines.length || scheduleLine ? `<h2>${[scheduleLine, contactLines.length ? contactLines.join(' &middot; ').replace(/<[^>]+>/g, '') : ''].filter(Boolean).join(' — ')}</h2>` : ''}
+  ${doc.body_markdown ? `<div class="p-doc">${renderMarkdown(doc.body_markdown)}</div>` : ''}
+  ${sessionDetails.map(sessionHtml).join('')}
+</body></html>`);
+  win.document.close();
+  win.focus();
+  win.print();
 }
 
 // Combined Syllabus tab: course content (markdown), the class's calendar of
@@ -350,8 +419,11 @@ async function renderSyllabusTab(container, classId) {
         </div>`
       )
       .join('');
-    assignmentsEl.querySelectorAll('.row-item').forEach((row) => {
-      row.addEventListener('click', () => navigate(`#/notebook/class/${classId}/tab/sessions`));
+    assignmentsEl.querySelectorAll('.row-item').forEach((row, i) => {
+      const sessionId = assignments[i].session_id;
+      row.addEventListener('click', () =>
+        navigate(sessionId ? `#/notebook/class/${classId}/tab/sessions/session/${sessionId}` : `#/notebook/class/${classId}/tab/sessions`)
+      );
     });
   }
 }

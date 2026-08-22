@@ -6,6 +6,7 @@ import { renderScriptureView } from './scripture.js';
 import { renderSearchResults } from './search.js';
 import { renderAdminView } from './admin.js';
 import { renderThisWeekView } from './thisweek.js';
+import { initQuickCapture } from './capture.js';
 
 const DARK_MODE_KEY = 'notes_dark_mode';
 const TEXT_SIZE_KEY = 'notes_text_size';
@@ -133,6 +134,19 @@ document.getElementById('nav-inbox').addEventListener('click', () => navigate('#
 document.getElementById('nav-scripture').addEventListener('click', () => navigate('#/scripture'));
 
 window.addEventListener('hashchange', route);
+
+initQuickCapture();
+
+// "/" focuses search from anywhere, like most search-heavy web apps — but
+// only when the user isn't already typing somewhere else (a literal "/" is
+// valid input in a note body, title, etc.).
+document.addEventListener('keydown', (ev) => {
+  if (ev.key !== '/' || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+  const tag = document.activeElement?.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || document.activeElement?.isContentEditable) return;
+  ev.preventDefault();
+  document.getElementById('search-input').focus();
+});
 
 // ===== Dark mode =====
 function applyDarkMode(on) {

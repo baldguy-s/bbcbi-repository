@@ -13,7 +13,7 @@ const ENTRY_TYPE_LABELS = { note: 'Note', assignment: 'Assignment', question: 'Q
 const expandedIds = new Set();
 let activeFilters = new Set(ENTRY_TYPES);
 
-export async function renderSessionsTab(container, classId) {
+export async function renderSessionsTab(container, classId, focusSessionId) {
   const myToken = currentRenderToken();
   const sessions = await api.get(`/api/classes/${classId}/sessions`);
   if (myToken !== currentRenderToken()) return;
@@ -37,8 +37,24 @@ export async function renderSessionsTab(container, classId) {
 
   const listEl = container.querySelector('#sessions-list');
 
+  // Deep-linked from Search (or elsewhere) with a specific session in mind —
+  // expand and scroll to it rather than leaving the visitor to hunt for it
+  // in a list that may already be several sessions long.
+  if (focusSessionId && sessions.some((s) => String(s.id) === String(focusSessionId))) {
+    expandedIds.add(String(focusSessionId));
+  }
+
   attachSessionListHandlers(listEl);
   if (sessions.length > 0) renderSessionCards(listEl, sessions);
+
+  if (focusSessionId) {
+    const card = listEl.querySelector(`.session-card[data-id="${focusSessionId}"]`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('flash-highlight');
+      setTimeout(() => card.classList.remove('flash-highlight'), 1500);
+    }
+  }
 }
 
 function renderFilterChips(container) {

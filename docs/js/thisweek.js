@@ -23,6 +23,8 @@ export async function renderThisWeekView(container) {
   `;
 
   const goToClass = (classId) => navigate(`#/notebook/class/${classId}/tab/sessions`);
+  const goToAssignment = (a) =>
+    navigate(a.session_id ? `#/notebook/class/${a.class_id}/tab/sessions/session/${a.session_id}` : `#/notebook/class/${a.class_id}/tab/sessions`);
 
   const sEl = container.querySelector('#week-sessions');
   if (week.sessions.length === 0) {
@@ -58,8 +60,8 @@ export async function renderThisWeekView(container) {
         </div>`
       )
       .join('');
-    aEl.querySelectorAll('.row-item').forEach((row) => {
-      row.addEventListener('click', () => goToClass(row.getAttribute('data-class')));
+    aEl.querySelectorAll('.row-item').forEach((row, i) => {
+      row.addEventListener('click', () => goToAssignment(assignments[i]));
     });
   }
 }

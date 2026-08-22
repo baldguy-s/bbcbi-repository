@@ -31,14 +31,14 @@
   <div class="sticky-bar">
     <div class="sticky-bar-inner">
       <div class="control-row">
+        <input type="search" class="search-input" id="search-input" placeholder="Search everything... notes, assignments, files (press /)">
+      </div>
+      <div class="control-row">
         <button class="chip-btn" id="nav-thisweek">This Week</button>
         <button class="chip-btn" id="nav-notebook">Notebook</button>
         <button class="chip-btn" id="nav-inbox">Inbox<span id="inbox-badge"></span></button>
         <button class="chip-btn" id="nav-scripture">Scripture Index</button>
         <button class="chip-btn" id="logout-btn" style="margin-left:auto;">Disconnect</button>
-      </div>
-      <div class="control-row">
-        <input type="search" class="search-input" id="search-input" placeholder="Search notes, assignments, files...">
       </div>
       <div class="control-row">
         <span class="control-label">Text size</span>
@@ -52,6 +52,25 @@
 
   <main id="main-content"></main>
   <div class="last-updated" id="last-updated"></div>
+
+  <button id="quick-capture-btn" title="Quick capture a note or photo (lands in Inbox)">+</button>
+
+  <div id="quick-capture-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Quick Capture</h3>
+        <button id="quick-capture-close" class="icon-btn" title="Close">&times;</button>
+      </div>
+      <p class="row-sub">Jot a thought or snap a photo now — it lands in the Inbox for you to file later.</p>
+      <textarea id="quick-capture-text" class="field-input" placeholder="Type a quick note..." rows="4"></textarea>
+      <div class="control-row" style="margin:10px 0;">
+        <button class="chip-btn" id="quick-capture-save-note">Save Note</button>
+        <span id="quick-capture-note-status" class="save-indicator"></span>
+      </div>
+      <div class="field-label">Or attach a photo / file</div>
+      <div id="quick-capture-upload"></div>
+    </div>
+  </div>
 </div>
 
 <script src="js/vendor/marked.min.js"></script>

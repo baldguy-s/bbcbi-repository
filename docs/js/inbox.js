@@ -107,7 +107,6 @@ async function buildFilingPanel(panel, fileId, years, onFiled) {
     confirmBtn.disabled = true;
     if (!classSel.value) return;
     targetSel.insertAdjacentHTML('beforeend', `<option value="classDoc:syllabus">Syllabus</option>`);
-    targetSel.insertAdjacentHTML('beforeend', `<option value="classDoc:schedule">Schedule</option>`);
     const sessions = await api.get(`/api/classes/${classSel.value}/sessions`);
     sessions.forEach((s) =>
       targetSel.insertAdjacentHTML(
